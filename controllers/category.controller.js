@@ -7,6 +7,10 @@ const insert_one = (req, res) => {
     if (!CategoryLabel || !SubCategoryLabel) {
         res.status(400).send({error: "CategoryLabel and SubCategoryLabel are required dummy!"});
     }
+    
+    const category = {
+        CategoryLabel, SubCategoryLabel
+    }
 
     db.Category.create(category).then(
         (data) => { res.send(data)}
@@ -91,9 +95,33 @@ const find_all = (req, res) => {
     }));
 }
 
+const delete_one = (req, res) => {
+    const id = req.params.id;
+
+    // Validate id
+    if (!id || isNaN(id) || parseInt(id) <= 0){
+        res.status(400).send({message: "Invalid ID Parameter"});
+    }
+
+    db.Category.destroy({
+        where: {CategoryID: id}
+    }).then(
+        (data) => {
+            if(data>0) res.send({message: `Sucessfully delete ${data} records!`})
+            else res.status(404).send({message: `No record found with CategoryID: ${id}`})
+        }
+    ).catch(
+        (err) => res.status(500).send({
+            message: err.message || "Some error I don't know about lolski!"
+        })
+    )
+
+}
+
 module.exports = {
     insert_one,
     find_one,
     find_all,
-    update_one
+    update_one,
+    delete_one
 }

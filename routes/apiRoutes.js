@@ -29,5 +29,10 @@ router.post("/category/", categoryController.insert_one);
  */
 router.patch("/category/:id", categoryController.update_one);
 
+/**
+ * Deletes a category based on id.
+ */
+router.delete("/category/:id", categoryController.delete_one);
+
 
 module.exports = router;
