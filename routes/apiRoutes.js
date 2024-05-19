@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const categoryController = require("../controllers/category.controller");
+const sizeController = require("../controllers/size.controller");
 
 /** Category Routes */
 
@@ -33,6 +34,13 @@ router.patch("/category/:id", categoryController.update_one);
  * Deletes a category based on id.
  */
 router.delete("/category/:id", categoryController.delete_one);
+
+/**
+ * Get one size based on id only.
+ */
+router.get("/size/:id", sizeController.find_one);
+
+router.post("/size/", sizeController.insert_one);
 
 
 module.exports = router;

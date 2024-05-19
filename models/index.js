@@ -21,5 +21,6 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.Category = require("./category.model.js")(sequelize, Sequelize);
+db.Size = require("./size.model.js")(sequelize, Sequelize);
 
 module.exports = db;

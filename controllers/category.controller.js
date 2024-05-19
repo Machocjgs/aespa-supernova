@@ -13,7 +13,7 @@ const insert_one = (req, res) => {
     }
 
     db.Category.create(category).then(
-        (data) => { res.send(data)}
+        (data) => { res.send(data) }
     ).catch(err => {
         res.status(500).send({
             message: err.message || "Some Error I don't know about lol"
@@ -25,14 +25,14 @@ const update_one = async (req, res) => {
     const categoryId = req.params.id;
 
     // Validate id
-    if (!id || isNaN(id) || parseInt(id) <= 0){
+    if (!categoryId || isNaN(categoryId) || parseInt(categoryId) <= 0){
         res.status(400).send({message: "Invalid ID Parameter"});
     }
 
     const {CategoryLabel, SubCategoryLabel} = req.body;
 
     // Validate fields to update
-    if (!CategoryLabel || !SubCategoryLabel) {
+    if (!CategoryLabel  && !SubCategoryLabel) {
         res.status(400).send({message: "Atleast one of CategoryLabel or SubCategoryLabel is required dummy!"})
     }
 
@@ -58,7 +58,7 @@ const update_one = async (req, res) => {
         res.send(save_resp);
 
     } catch (error) {
-        res.status(500).send({message: err.message || "Some error I don't know lolskrt"});
+        res.status(500).send({message: error.message || "Some error I don't know lolskrt"});
     }
 }
 
@@ -107,7 +107,7 @@ const delete_one = (req, res) => {
         where: {CategoryID: id}
     }).then(
         (data) => {
-            if(data>0) res.send({message: `Sucessfully delete ${data} records!`})
+            if(data>0) res.send({message: `Sucessfully deleted ${data} records!`})
             else res.status(404).send({message: `No record found with CategoryID: ${id}`})
         }
     ).catch(
