@@ -66,7 +66,7 @@ const find_one = (req, res) => {
     console.log("Looking for:");
     // Validate ID
     const categoryId = req.params.id;
-    if (!id || isNaN(id) || parseInt(id) <= 0){
+    if (!categoryId || isNaN(categoryId) || parseInt(categoryId) <= 0){
         res.status(400).send({message: "Invalid ID Parameter"});
     }
 
