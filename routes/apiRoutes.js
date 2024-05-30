@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const categoryController = require("../controllers/category.controller");
 const sizeController = require("../controllers/size.controller");
+const userController = require("../controllers/user.controller");
 
 /** Category Routes */
 
@@ -41,6 +42,15 @@ router.delete("/category/:id", categoryController.delete_one);
 router.get("/size/:id", sizeController.find_one);
 
 router.post("/size/", sizeController.insert_one);
+
+
+/**
+ * User registration!
+ */
+
+router.post("/user/register", userController.insert_one);
+
+router.post("/user/login", userController.log_in);
 
 
 module.exports = router;
