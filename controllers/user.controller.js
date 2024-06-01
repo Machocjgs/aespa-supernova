@@ -1,133 +1,49 @@
 const db = require("../models/index")
+const config = require("../config/jwt.config")
+const jwt = require("jsonwebtoken");
 
-const insert_one = (req, res) => {
+const log_in = (req,res) => {
+    const {UserName, Password} = req.body;
+
+    if (!UserName || !Password) {
+        res.status(500).send({error: "Missing UserName or Password!"});
+    }
+
+    db.User.findOne({ where: {UserName} }).then(async (user) => {
+        if (!user) {
+            res.status(404).send({error: "Invalid User or Password"});
+        } else if (!user.validPassword(Password)) {
+            res.status(404).send({error: "Invalid User or Password"});
+        } else {
+            // Generate JWT here
+
+            const {Password:_, ...jwt_payload} = user;
+
+            const token = jwt.sign(jwt_payload, config.jwttoken, {expiresIn: '3h'});
+            res.header('token', token).send({message: "Login successful!"});
+        }
+    })
+
+};
+
+const register = (req,res) => {
     const {UserName, Password, Email, Position, TierAccess} = req.body
-    
+
     // Validate input parameters
     if (!UserName || !Password || !Email || !Position || !TierAccess) {
         res.status(400).send({error: "All fields must contain value!"});
     }
 
-    if (!CategoryLabel || !SubCategoryLabel) {
-        res.status(400).send({error: "CategoryLabel and SubCategoryLabel are required dummy!"});
-    }
-    
-    const category = {
-        CategoryLabel, SubCategoryLabel
-    }
-
-    const user = {UserName, Password, Email, Position, TierAccess}
+    const user = {UserName, Password, Email, Position, TierAccess};
 
     db.User.create(user).then(
-        (data) => { res.send(data) }
-    ).catch(err => {
-        res.status(500).send({
-            message: err.message || "Some Error I don't know about lol"
-        })
-    });
-}
-
-const update_one = async (req, res) => {
-    const categoryId = req.params.id;
-
-    // Validate id
-    if (!categoryId || isNaN(categoryId) || parseInt(categoryId) <= 0){
-        res.status(400).send({message: "Invalid ID Parameter"});
-    }
-
-    const {CategoryLabel, SubCategoryLabel} = req.body;
-
-    // Validate fields to update
-    if (!CategoryLabel  && !SubCategoryLabel) {
-        res.status(400).send({message: "Atleast one of CategoryLabel or SubCategoryLabel is required dummy!"})
-    }
-
-    try {
-        // Find first target category to update.
-        const category = await db.Category.findOne({
-            where: {CategoryID:categoryId}}
-        );
-        // Validate if target id exists
-        if (!category) {
-            res.status(404).send({message: "Category not found"});
-        }
-
-        // Set appropriate category only when provided.
-        category_updates = {}
-        if (CategoryLabel) category_updates.CategoryLabel = CategoryLabel;
-        if (SubCategoryLabel) category_updates.SubCategoryLabel = SubCategoryLabel;
-
-        // Update and save!
-        category.set(category_updates);
-        save_resp = await category.save();
-
-        res.send(save_resp);
-
-    } catch (error) {
-        res.status(500).send({message: error.message || "Some error I don't know lolskrt"});
-    }
-}
-
-const find_one = (req, res) => {
-    console.log("Looking for:");
-    // Validate ID
-    const categoryId = req.params.id;
-    if (!categoryId || isNaN(categoryId) || parseInt(categoryId) <= 0){
-        res.status(400).send({message: "Invalid ID Parameter"});
-    }
-
-    db.Category.findOne(
-        { where: {CategoryID:categoryId}}
-    ).then(
-        (data) => res.send(data)
-    ).catch((err) => res.status(500).send({
-        message: err.message || "Some error I don't know about lols"
-    }));
-}
-
-const find_all = (req, res) => {
-    const {CategoryID, CategoryLabel, SubCategoryLabel } = req.query;
-
-    // Check and generate filter conditions.
-    const condition = {};
-    if (CategoryID) condition.CategoryID = CategoryID;
-    if (CategoryLabel) condition.CategoryLabel = CategoryLabel;
-    if (SubCategoryLabel) condition.SubCategoryLabel = SubCategoryLabel;
-
-    db.Category.findAll({where:condition}).then(
-        (data) => res.send(data)
-    ).catch((err) => res.status(500).send({
-        message: err.message || "Some error I don't know about lols"
-    }));
-}
-
-const delete_one = (req, res) => {
-    const id = req.params.id;
-
-    // Validate id
-    if (!id || isNaN(id) || parseInt(id) <= 0){
-        res.status(400).send({message: "Invalid ID Parameter"});
-    }
-
-    db.Category.destroy({
-        where: {CategoryID: id}
-    }).then(
-        (data) => {
-            if(data>0) res.send({message: `Sucessfully deleted ${data} records!`})
-            else res.status(404).send({message: `No record found with CategoryID: ${id}`})
-        }
+        (data) => res.send({message:"User successfully created"})
     ).catch(
-        (err) => res.status(500).send({
-            message: err.message || "Some error I don't know about lolski!"
-        })
+        (err) => res.status(500).send({error:err.message})
     )
-
-}
+};
 
 module.exports = {
-    insert_one,
-    find_one,
-    find_all,
-    update_one,
-    delete_one
+    log_in,
+    register
 }
