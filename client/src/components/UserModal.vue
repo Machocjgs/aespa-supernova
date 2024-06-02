@@ -12,19 +12,19 @@
               <v-text-field label="User ID" v-model="SelectedUser.user_id" :variant="filled" :readonly="true"/>
             </div>
             <div class="input-container">
-              <v-text-field v-model="SelectedUser.user_name" label="User Name" :variant="variant" :readonly="readonly"/>
+              <v-text-field v-model="SelectedUser.user_name" label="User Name" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
             </div>
             <div v-if="mode === 'create'" class="input-container">
-              <v-text-field v-model="SelectedUser.password" type="password" label="Password" :variant="variant" :readonly="readonly"/>
+              <v-text-field v-model="SelectedUser.password" type="password" label="Password" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
             </div>
             <div class="input-container">
-              <v-text-field v-model="SelectedUser.email" label="Email" :variant="variant" :readonly="readonly"/>
+              <v-text-field v-model="SelectedUser.email" label="Email" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
             </div>
             <div class="input-container">
-              <v-text-field v-model="SelectedUser.position" label="Position" :variant="variant" :readonly="readonly"/>
+              <v-text-field v-model="SelectedUser.position" label="Position" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
             </div>
             <div class="input-container">
-              <v-text-field v-model="SelectedUser.tier_access" label="Tier Access" :variant="variant" :readonly="readonly"/>
+              <v-text-field v-model="SelectedUser.tier_access" label="Tier Access" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
             </div>
             <div v-if="mode !== 'create'" class="input-container">
               <v-text-field v-model="SelectedUser.created_dt" label="Created At" :variant="filled" :readonly="true"/>
@@ -37,7 +37,7 @@
       </div>
       <div class="modal-actions">
         <button @click="closeModal" class="close-button">Close</button>
-        <button v-if="mode !== 'view'" @click=submitForm class="submit-button">Submit</button>
+        <button v-if="mode !== 'view'" :disabled="!changesMade" @click=submitForm class="submit-button">Submit</button>
       </div>
     </div>
   </div>
@@ -63,12 +63,15 @@ export default {
   watch: {
     user(newUserValue) {
       this.SelectedUser = {...newUserValue};
+      this.originalUser = {...newUserValue};
     }
   },
   data() {
     console.log(this.user);
     return {
-      SelectedUser: { ...this.user }
+      SelectedUser: { ...this.user },
+      originalUser: { ...this.user }, // Store the original user data
+      requiredFields: ['user_name', 'password', 'position', 'email', 'tier_access']
     };
   },
   methods: {
@@ -81,7 +84,11 @@ export default {
 
     closeModal() {
       this.$emit('close');
-    }
+    },
+
+    requiredRule(value) {
+      return !!value || 'Field is required';
+    },
   },
   computed: {
     variant() {
@@ -89,7 +96,20 @@ export default {
     },
     readonly() {
       return this.mode === 'view'
-    }
+    },
+    changesMade() {
+      // Check if any changes have been made to the user data
+      if (this.mode !== 'create'){
+        for (let key in this.SelectedUser) {
+          if (this.SelectedUser[key] != this.originalUser[key] && this.SelectedUser[key]) {
+            return true;
+          }
+        }
+        return false;
+      } else {
+        return this.requiredFields.every(field => !!this.SelectedUser[field])
+      }
+    },
   }
 };
 </script>
@@ -163,6 +183,12 @@ export default {
   cursor: pointer;
   margin-left: 10px;
   transition: background-color 0.3s; /* Smooth transition */
+
+  &:disabled {
+    color: #eee;
+    background: #aaa;
+    cursor: auto;
+  }
 }
 
 .modal-actions {
