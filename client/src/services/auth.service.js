@@ -11,7 +11,7 @@ class AuthService {
       })
       .then(response => {
         if (response.data.accessToken) {
-          localStorage.setItem('user', JSON.stringify(response.data));
+          localStorage.setItem('user', JSON.stringify(response.data.user));
           localStorage.setItem('token', JSON.stringify(response.data.accessToken));
         }
 
@@ -30,6 +30,7 @@ class AuthService {
 
   logout() {
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   }
 }
 

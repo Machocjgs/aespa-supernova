@@ -54,8 +54,7 @@
 import { ref } from 'vue'
 
 const is_expanded = ref(localStorage.getItem("is_expanded") === "true")
-const localStorageUser = JSON.parse(localStorage.getItem('user'))
-const user = localStorageUser ? localStorageUser.user : null
+const user = JSON.parse(localStorage.getItem('user'));
 
 const ToggleMenu = () => {
     is_expanded.value = !is_expanded.value

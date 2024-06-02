@@ -30,6 +30,7 @@ class UserService {
   }
 
   deleteUser(user_id) {
+    console.log(user_id);
     return axios.delete(`${API_URL}/${user_id}`, {headers:{'token': localStorage.getItem('token')}});
   }
 }

@@ -72,12 +72,14 @@
             <td>{{ user.created_dt }}</td>
             <td>{{ user.last_modified_dt }}</td>
             <td>
-              <button @click="updateUserModal(user)" class="icon-button">
-                <span class="material-icons">edit</span>
-              </button>
-              <button @click="deleteUser(user)" class="icon-button">
-                <span class="material-icons">delete</span>
-              </button>
+              <div class="row-actions">
+                <button @click="updateUserModal(user)" class="icon-button">
+                  <span class="material-icons">edit</span>
+                </button>
+                <button @click="confirmDeleteUser(user)" class="icon-button" v-if="local_user_id!=user.user_id">
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -87,6 +89,34 @@
     </main>
   </div>
   <Modal :show="isModalOpen" :mode="modalMode" :user="selectedUser" @create="createUser" @update="updateUser" @close="closeModal" />
+
+  <v-dialog v-model="isDeleteDialogOpen" max-width="500">
+    <v-card>
+      <v-card-title class="headline">Are you sure to delete this?</v-card-title>
+      <v-card-actions class="justify-center">
+        <v-spacer></v-spacer>
+        <v-btn color="red" @click="deleteUser">Yes</v-btn>
+        <v-btn color="grey" @click="isDeleteDialogOpen = false">No</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  
+  <v-snackbar
+    v-model="isSnackBarOpen"
+    timeout=3000
+    class="text-center"
+  >
+    {{ snackBarText }}
+    <template v-slot:actions>
+      <v-btn
+        color="blue"
+        variant="text"
+        @click="isSnackBarOpen = false"
+      >
+        Close
+      </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script>
@@ -106,10 +136,17 @@ export default {
       sortOrder: 'asc',
       isModalOpen: false,
       selectedUser: null,
-      modalMode: 'view'
+      modalMode: 'view',
+      local_user_id: null,
+      isDeleteDialogOpen: false,
+      userToDelete: null,
+      isSnackBarOpen:false,
+      snackBarText:''
     };
   },
   created() {
+    this.local_user_id = JSON.parse(localStorage.getItem('user')).user_id;
+    console.log(this.local_user_id);
     this.fetchUsers();
   },
   methods: {
@@ -142,28 +179,52 @@ export default {
       this.isModalOpen = true;
     },
 
+    confirmDeleteUser(user) {
+      this.userToDelete = user;
+      this.isDeleteDialogOpen = true;
+    },
+
+    showSnackBar(text){
+      this.snackBarText = text;
+      this.isSnackBarOpen = true
+    },
+
     async updateUser(user) {
+      try {
+        await UserService.updateUser(user);
+        this.showSnackBar('User successfully updated!');
+      } catch(err) {
+        console.error(err);
+        this.showSnackBar('User update failed! Something went wrong');
+      }
       console.log("UPDATE!");
-      const response = await UserService.updateUser(user);
+      const response = 
       console.log(response);
       this.closeModal()
     },
 
     async createUser(user) {
-      console.log("CREATE!");
-      const response = await UserService.createUser(user);
-      console.log(response);
+      try{
+        await UserService.createUser(user);
+        this.showSnackBar("User successfully created!");
+      } catch(err) {
+        console.error(err);
+        this.showSnackBar('User creation failed! Something went wrong');
+      }
+      await this.fetchUsers();
       this.closeModal()
     },
     
-    async deleteUser(user) {
+    async deleteUser() {
       try {
-        await UserService.deleteUser(user.user_id);
-        this.users = this.users.filter(u => u.user_id !== user.user_id);
-        alert(`Deleted user with ID: ${user.user_id}`);
+        await UserService.deleteUser(this.userToDelete.user_id);
+        this.showSnackBar("User successfully deleted!");
       } catch (error) {
         console.error('Error deleting user:', error);
+        this.showSnackBar("Delete failed! Something went wrong.");
       }
+      await this.fetchUsers()
+      this.isDeleteDialogOpen = false;
     },
     sortBy(key) {
       if (this.sortKey == key) {
@@ -338,5 +399,11 @@ tr:hover {
 
 .clickable-row:hover {
   background-color: #FFE7AD;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 </style>
