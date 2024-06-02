@@ -2,24 +2,24 @@ module.exports = (sequelize, Sequelize) => {
     const Size = sequelize.define("size", 
     // Table fields and chu chu here
     {
-        SizeID : {
+        size_id : {
             type: Sequelize.INTEGER,
             primaryKey: true,
             autoIncrement: true
         },
-        SizeLabel: {
+        size_label: {
             type: Sequelize.STRING,
             allownull: false
         },
-        SizeDescription: {
+        size_description: {
             type: Sequelize.STRING,
             allownull: false
         },
-        CreatedDt: {
+        created_dt: {
             type: Sequelize.DATE,
             allownull: false
         },
-        LastModifiedDt: {
+        last_modified_dt: {
             type: Sequelize.DATE,
             allownull: true
         }
@@ -29,8 +29,8 @@ module.exports = (sequelize, Sequelize) => {
         freezeTableName: true,
         tableName: 'size',
         timestamps: true,
-        createdAt: 'CreatedDt',
-        updatedAt: 'LastModifiedDt'
+        createdAt: 'created_dt',
+        updatedAt: 'last_modified_dt'
 
     });
 

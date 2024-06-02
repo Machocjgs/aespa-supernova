@@ -7,7 +7,7 @@ const sequelize = new Sequelize(
         host: dbConfig.HOST,
         dialect: dbConfig.dialect,
         dialectOptions: {
-            project: 'odd-block-82535251',
+            project: dbConfig.PROJECT,
             ssl: {
                 require: true,
                 rejectUnauthorized: false

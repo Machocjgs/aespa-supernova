@@ -2,8 +2,11 @@ const express = require("express")
 const app = express()
 const morgan = require("morgan");
 const PORT = process.env.PORT || 3000;
+const cors = require('cors');
 
 app.use(morgan("dev"));
+
+app.use(cors());
 // Parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({extended:true}));
 // Parse requests of content-type - applicaiton/json

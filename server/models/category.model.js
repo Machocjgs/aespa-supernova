@@ -1,23 +1,23 @@
 module.exports = (sequelize, Sequelize) => {
     const Category = sequelize.define("category", {
-        CategoryID: {
+        category_id: {
             type: Sequelize.INTEGER,
             primaryKey: true,
             autoIncrement: true
         },
-        CategoryLabel: {
+        category_label: {
             type: Sequelize.STRING,
             allownull: false
         },
-        SubCategoryLabel: {
+        subcategory_label: {
             type: Sequelize.STRING,
             allownull: false
         },
-        CreatedDt: {
+        created_dt: {
             type: Sequelize.DATE,
             allownull: false
         },
-        LastModifiedDt: {
+        last_modified_dt: {
             type: Sequelize.DATE,
             allownull: true
         },
@@ -26,8 +26,8 @@ module.exports = (sequelize, Sequelize) => {
         freezeTableName: true,
         tableName: 'category',
         timestamps: true,
-        createdAt: "CreatedDt",
-        updatedAt: "LastModifiedDt"
+        createdAt: "created_dt",
+        updatedAt: "last_modified_dt"
     }
     );
 
