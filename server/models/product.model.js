@@ -24,7 +24,7 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false
         },
         product_price: {
-            type: Sequelize.STRING,
+            type: Sequelize.DOUBLE,
             allowNull: false
         },
         image_link: {
