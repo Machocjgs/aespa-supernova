@@ -2,6 +2,12 @@ const path = require('path');
 const db = require("../models/index");
 const {upload} = require("../helpers/image.handler");
 
+const generateImageLink = (req, filename) => {
+    const host = req.get('host');
+    const protocol = req.protocol;
+    return `${protocol}://${host}/images/${filename}`;
+}
+
 const insert_one = async (req, res) => {
     upload.single('image')(req, res, async function(err) {
         if (err){
@@ -27,7 +33,7 @@ const insert_one = async (req, res) => {
                 product_brand,
                 product_description,
                 product_price,
-                image_file_name:req.file.filename
+                image_link: generateImageLink(req, req.file.filename)
             };
     
             console.log(new_product);
