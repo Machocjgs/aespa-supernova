@@ -51,7 +51,48 @@ const insert_one = async (req, res) => {
     });
 }
 
+const find_many = (req,res) => {
+    const {
+        product_name,
+        product_brand,
+        product_description,
+        category_label,
+        subcategory_label
+    } = req.query;
+
+    const productCondition = {};
+    if(product_name) productCondition.product_name = product_name
+    if(product_brand) productCondition.product_brand = product_brand
+    if(product_description) productCondition.product_description = product_description
+
+    const categoryCondition = {};
+    if(category_label) categoryCondition.category_label = category_label
+    if(subcategory_label) categoryCondition.subcategory_label = subcategory_label
+
+    db.Product.findAll({
+        where: productCondition,
+        include: [{
+            model: db.Category,
+            as: 'category',
+            attributes: [],
+            where: categoryCondition
+        }],
+        attributes: {
+            include: [
+                [db.Sequelize.col('category.category_label'), 'category_label'],
+                [db.Sequelize.col('category.subcategory_label'), 'subcategory_label']
+            ]
+        },
+    }).then(
+        (data) => res.send(data)
+    ).catch(
+        (err) => res.status(500).send({error: err.message})
+    );
+
+}
+
 
 module.exports = {
-    insert_one
+    insert_one,
+    find_many
 }

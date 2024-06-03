@@ -6,4 +6,6 @@ const verifyToken = require("../helpers/verifyToken");
 
 router.post("/", verifyToken, productcontroller.insert_one);
 
+router.get("/", verifyToken, productcontroller.find_many);
+
 module.exports = router;
