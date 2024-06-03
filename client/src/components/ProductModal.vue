@@ -8,7 +8,7 @@
       <div class="modal-body">
         <div class="product-image">
           <!-- Display the uploaded image -->
-          <template v-if="mode === 'create' && !SelectedProduct.image_url">
+          <template v-if="!SelectedProduct.image_url">
             <i class="material-icons big-icon">image</i> <!-- Change 'material-icons' to your icon library -->
           </template>
           <template v-else>
@@ -20,7 +20,7 @@
         <form @submit.prevent="submitForm">
           <div class="form-group">
             <div class="input-row">
-              <div v-if="mode !== 'create'" class="input-container">
+              <div v-if="mode !== 'create'" class="input-container input-margin">
                 <v-text-field label="Product ID" v-model="SelectedProduct.product_id" :variant="filled" :readonly="true"/>
               </div>
               <div class="input-container">
@@ -30,8 +30,13 @@
             <div class="input-container">
               <v-text-field v-model="SelectedProduct.product_description" label="Description" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
             </div>
-            <div class="input-container">
-              <v-text-field v-model="SelectedProduct.category" label="Category" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
+            <div class="input-row">
+              <div class="input-container input-margin">
+                <v-text-field v-model="SelectedProduct.category_label" label="Category" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
+              </div>
+              <div class="input-container">
+                <v-text-field v-model="SelectedProduct.subcategory_label" label="Sub Category" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
+              </div>
             </div>
             <div class="input-container">
               <v-text-field v-model="SelectedProduct.product_brand" label="Brand" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
@@ -232,7 +237,10 @@ export default {
 
 .input-row .input-container {
   flex: 1; /* Take up equal space */
-  margin-right: 10px; /* Add spacing between inputs */
+}
+
+.input-margin {
+  margin-right: 10px;
 }
 
 .input-container input,

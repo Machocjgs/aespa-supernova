@@ -196,7 +196,7 @@ export default {
         console.error(err);
         this.showSnackBar('User update failed! Something went wrong');
       }
-      console.log("UPDATE!");
+      await this.fetchUsers();
       const response = 
       console.log(response);
       this.closeModal()

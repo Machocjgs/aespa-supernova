@@ -36,9 +36,15 @@
                     {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
                   </span>
                 </th>
-                <th @click="sortBy('category')" :class="{ 'sortable': true, 'sorted': sortKey === 'category' }">
+                <th @click="sortBy('category_label')" :class="{ 'sortable': true, 'sorted': sortKey === 'category_label' }">
                   Category
-                  <span v-if="sortKey === 'category'" class="material-icons">
+                  <span v-if="sortKey === 'category_label'" class="material-icons">
+                    {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                  </span>
+                </th>
+                <th @click="sortBy('subcategory_label')" :class="{ 'sortable': true, 'sorted': sortKey === 'subcategory_label' }">
+                  Sub Category
+                  <span v-if="sortKey === 'subcategory_label'" class="material-icons">
                     {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
                   </span>
                 </th>
@@ -67,7 +73,8 @@
             <tr v-for="product in sortedProducts" :key="product.product_id" @dblclick="viewProductModal(product)" class="clickable-row">
               <td>{{ product.product_name }}</td>
               <td>{{ product.product_brand }}</td>
-              <td>{{ product.category }}</td>
+              <td>{{ product.category_label }}</td>
+              <td>{{ product.subcategory_label }}</td>
               <td>{{ product.product_price }}</td>
               <td>{{ product.created_dt }}</td>
               <td>{{ product.last_modified_dt }}</td>

@@ -5,7 +5,7 @@ const API_URL = 'http://localhost:3000/api/user/';
 class UserService {
   findMany(params) {
     return axios
-      .get(API_URL, {params})
+      .get(API_URL, {params}, {headers: {'token': localStorage.getItem('token')}})
       .then(response => {
         return response;
       });
