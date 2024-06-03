@@ -1,6 +1,8 @@
 const express = require("express")
 const app = express()
 const morgan = require("morgan");
+
+const path = require('path');
 const PORT = process.env.PORT || 3000;
 const cors = require('cors');
 
@@ -13,8 +15,11 @@ app.use(express.urlencoded({extended:true}));
 app.use(express.json());
 
 // Tell Node that our routes are found in apiRoutes
-const apiRoutes = require("./routes/apiRoutes");
+const apiRoutes = require("./routes");
 app.use("/api", apiRoutes);
+
+// Serve static files from the 'images' directory
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Initialize our database using sequelize as our orm
 const db = require("./models")
