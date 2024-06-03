@@ -19,8 +19,8 @@
                 <span class="material-icons-round">inventory_2</span>
                 <span class="text">Products</span>
             </router-link>
-            <router-link class="button" to="/sales">
-                <span class="material-icons-round">request_quote</span>
+            <router-link class="button" to="/inventory">
+                <span class="material-icons-round">inventory</span>
                 <span class="text">Inventory</span>
             </router-link>
             <router-link class="button" to="/users">

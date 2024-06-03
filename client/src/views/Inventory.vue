@@ -2,7 +2,7 @@
   <div class="users-page-container">
     <main class="users-page">
       <header class="header">
-        <h1 class="header-title">Users</h1>
+        <h1 class="header-title">Inventory</h1>
         <div class="search-container">
           <input
             type="text"
@@ -13,10 +13,6 @@
           />
           <button @click="fetchUsers" class="search-button">
             <span class="material-icons">search</span>
-          </button>
-          <button @click="createUserModal" class="create-button">
-            <span class="material-icons">add</span>
-            <span class="create-user">Create User</span>
           </button>
         </div>
       </header>

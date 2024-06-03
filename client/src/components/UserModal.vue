@@ -18,7 +18,7 @@
               <v-text-field v-model="SelectedUser.password" type="password" label="Password" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
             </div>
             <div class="input-container">
-              <v-text-field v-model="SelectedUser.email" label="Email" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
+              <v-text-field v-model="SelectedUser.email" label="Email" :variant="variant" :readonly="readonly" :rules="[requiredRule, emailRule]"/>
             </div>
             <div class="input-container">
               <v-text-field v-model="SelectedUser.position" label="Position" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
@@ -58,7 +58,7 @@ export default {
     user: {
       type: Object,
       default: null
-    }
+    },
   },
   watch: {
     user(newUserValue) {
@@ -67,7 +67,6 @@ export default {
     }
   },
   data() {
-    console.log(this.user);
     return {
       SelectedUser: { ...this.user },
       originalUser: { ...this.user }, // Store the original user data
@@ -89,6 +88,11 @@ export default {
     requiredRule(value) {
       return !!value || 'Field is required';
     },
+
+    emailRule(value) {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailPattern.test(value) || 'Invalid email format';
+    }
   },
   computed: {
     variant() {
@@ -98,14 +102,22 @@ export default {
       return this.mode === 'view'
     },
     changesMade() {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      // Ensure email format is valid if email is present
+      if (this.SelectedUser.email && !emailPattern.test(this.SelectedUser.email)) {
+        return false
+      }
+
       // Check if any changes have been made to the user data
       if (this.mode !== 'create'){
         for (let key in this.SelectedUser) {
           if (this.SelectedUser[key] != this.originalUser[key] && this.SelectedUser[key]) {
-            return true;
+
+            return true
           }
         }
-        return false;
+        return false
       } else {
         return this.requiredFields.every(field => !!this.SelectedUser[field])
       }

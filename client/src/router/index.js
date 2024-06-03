@@ -28,6 +28,10 @@ const router = createRouter({
             component: () => import('../views/Users.vue')
         },
         {
+            path: '/inventory',
+            component: () => import('../views/Inventory.vue')
+        },
+        {
             path: '/signout',
             name: 'signout',
             meta:{sidebar:false},
