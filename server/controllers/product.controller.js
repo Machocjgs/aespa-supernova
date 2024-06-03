@@ -101,21 +101,33 @@ const update_one = (req,res) => {
 
 const find_many = (req,res) => {
     const {
+        all_search,
         product_name,
         product_brand,
-        product_description,
         category_label,
-        subcategory_label
+        subcategory_label,
     } = req.query;
 
     const productCondition = {};
-    if(product_name) productCondition.product_name = product_name
-    if(product_brand) productCondition.product_brand = product_brand
-    if(product_description) productCondition.product_description = product_description
-
     const categoryCondition = {};
-    if(category_label) categoryCondition.category_label = category_label
-    if(subcategory_label) categoryCondition.subcategory_label = subcategory_label
+
+    if (all_search) {
+        // If all_search is selected, search across all relevant columns including category fields
+        productCondition[db.Sequelize.Op.or] = [
+            { product_name: { [db.Sequelize.Op.like]: `%${all_search}%` } },
+            { product_brand: { [db.Sequelize.Op.like]: `%${all_search}%` } },
+            { '$category.category_label$': { [db.Sequelize.Op.like]: `%${all_search}%` } },
+            { '$category.subcategory_label$': { [db.Sequelize.Op.like]: `%${all_search}%` } },
+        ];
+    } else {
+        if (product_name) productCondition.product_name = { [db.Sequelize.Op.like]: `%${product_name}%` };
+        if (product_brand) productCondition.product_brand = { [db.Sequelize.Op.like]: `%${product_brand}%` };
+
+        if (category_label) categoryCondition.category_label = { [db.Sequelize.Op.like]: `%${category_label}%` };
+        if (subcategory_label) categoryCondition.subcategory_label = { [db.Sequelize.Op.like]: `%${subcategory_label}%` };
+    }
+
+    
 
     db.Product.findAll({
         where: productCondition,

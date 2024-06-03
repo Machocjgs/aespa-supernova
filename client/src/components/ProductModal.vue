@@ -8,11 +8,11 @@
       <div class="modal-body">
         <div class="product-image">
           <!-- Display the uploaded image -->
-          <template v-if="!SelectedProduct.image_url">
+          <template v-if="!SelectedProduct.image_link">
             <i class="material-icons big-icon">image</i> <!-- Change 'material-icons' to your icon library -->
           </template>
           <template v-else>
-            <img v-if="SelectedProduct.image_url" :src="SelectedProduct.image_url" alt="Product Image" />
+            <img v-if="SelectedProduct.image_link" :src="SelectedProduct.image_link" alt="Product Image" />
           </template>
           <!-- Replace the static image with an input field for file upload -->
           <input v-if="mode !== 'view'" type="file" @change="handleImageUpload" accept="image/*" />

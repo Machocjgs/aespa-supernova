@@ -20,11 +20,13 @@
             <div class="input-container">
               <v-text-field v-model="SelectedUser.email" label="Email" :variant="variant" :readonly="readonly" :rules="[requiredRule, emailRule]"/>
             </div>
-            <div class="input-container">
-              <v-text-field v-model="SelectedUser.position" label="Position" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
-            </div>
-            <div class="input-container">
-              <v-text-field v-model="SelectedUser.tier_access" label="Tier Access" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
+            <div class="input-row">
+              <div class="input-container input-margin">
+                <v-text-field v-model="SelectedUser.position" label="Position" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
+              </div>
+              <div class="input-container input-margin">
+                <v-text-field v-model="SelectedUser.tier_access" label="Tier Access" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
+              </div>
             </div>
             <div v-if="mode !== 'create'" class="input-container">
               <v-text-field v-model="SelectedUser.created_dt" label="Created At" :variant="filled" :readonly="true"/>
@@ -228,6 +230,28 @@ export default {
 
 .input-container input {
   flex: 1; /* Allow input to take up remaining space */
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+}
+
+.input-row .input-container {
+  flex: 1; /* Take up equal space */
+}
+
+.input-margin {
+  margin-right: 10px;
+}
+
+.input-container input,
+.input-container textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
 }
 
 </style>

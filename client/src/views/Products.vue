@@ -3,22 +3,42 @@
       <main class="products-page">
         <header class="header">
           <h1 class="header-title">Products</h1>
-          <div class="search-container">
+          <!-- <div class="search-container">
             <input
               type="text"
               v-model="search"
               @input="fetchProducts"
               placeholder="Search"
               class="search-input"
-            />
-            <button @click="fetchProducts" class="search-button">
-              <span class="material-icons">search</span>
-            </button>
-            <button @click="createProductModal" class="create-button">
-              <span class="material-icons">add</span>
-              <span class="create-product">Add Product</span>
-            </button>
-          </div>
+            /> -->
+            <div class="search-container">
+                <div class="column-select-container">
+                    <select v-model="selectedColumn" class="column-select">
+                    <option value="">All Columns</option>
+                    <option value="product_name">Product Name</option>
+                    <option value="product_brand">Brand</option>
+                    <option value="category_label">Category</option>
+                    <option value="subcategory_label">Sub Category</option>
+                    <!-- Add more options for other columns -->
+                    </select>
+                </div>
+                <div class="search-input-container">
+                    <input
+                    type="text"
+                    v-model="search"
+                    @input="fetchProducts"
+                    placeholder="Search"
+                    class="search-input"
+                    />
+                </div>
+                <button @click="fetchProducts" class="search-button">
+                <span class="material-icons">search</span>
+                </button>
+                <button @click="createProductModal" class="create-button">
+                <span class="material-icons">add</span>
+                <span class="create-product">Add Product</span>
+                </button>
+            </div>
         </header>
         <div class="product-table-container">
         <table>
@@ -138,6 +158,7 @@
     data() {
       return {
         products: [],
+        selectedColumn: '',
         search: '',
         sortKey: '',
         sortOrder: 'asc',
@@ -151,20 +172,27 @@
       };
     },
     created() {
-      this.fetchProducts();
+        this.fetchProducts();
     },
     methods: {
       async fetchProducts() {
-        try {
-          const queryParams = {
-            search: this.search
-          };
-          const response = await ProductService.findMany(queryParams);
+            try {
+                const queryParams = {};
 
-          this.products = response.data;
-        } catch (error) {
-          console.error('Error fetching products:', error);
-        }
+                if (this.selectedColumn) {
+                    // If a specific column is selected, use it for search
+                    queryParams[this.selectedColumn] = this.search;
+                } else {
+                    // If no specific column is selected, apply search to all columns
+                    queryParams['all_search'] = this.search;
+                }
+                    
+                const response = await ProductService.findMany(queryParams);
+
+                this.products = response.data;
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            }
       },
       updateProductModal(product) {
         this.selectedProduct = product;
@@ -310,6 +338,16 @@
     border-radius: 4px;
     flex: 1;
     min-width: 300px
+  }
+
+  .column-select-container {
+    margin-right: 10px;
+    }
+
+  .column-select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
   }
   
   .create-button {
