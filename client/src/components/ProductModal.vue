@@ -21,7 +21,7 @@
           <div class="form-group">
             <div class="input-row">
               <div v-if="mode !== 'create'" class="input-container input-margin">
-                <v-text-field label="Product ID" v-model="SelectedProduct.product_id" :variant="filled" :readonly="true"/>
+                <v-text-field label="Product ID" v-model="SelectedProduct.product_id" variant="filled" :readonly="true"/>
               </div>
               <div class="input-container">
                 <v-text-field v-model="SelectedProduct.product_name" label="Product Name" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
@@ -30,14 +30,16 @@
             <div class="input-container">
               <v-text-field v-model="SelectedProduct.product_description" label="Description" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
             </div>
+            <!-- Drop down -->
             <div class="input-row">
               <div class="input-container input-margin">
-                <v-text-field v-model="SelectedProduct.category_label" label="Category" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
+                <v-select :items="categoryOptions" v-model="SelectedProduct.category_label" label="Category" :readonly="readonly" :rules="[requiredRule]"> </v-select>
               </div>
-              <div class="input-container">
-                <v-text-field v-model="SelectedProduct.subcategory_label" label="Sub Category" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
+              <div class="input-container input-margin">
+                <v-select :items="subCategoryOptions" v-model="SelectedProduct.subcategory_label" label="Sub Category" :readonly="readonly"  :rules="[requiredRule]"></v-select>
               </div>
             </div>
+            <!-- Drop down -->
             <div class="input-container">
               <v-text-field v-model="SelectedProduct.product_brand" label="Brand" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
             </div>
@@ -45,10 +47,10 @@
               <v-text-field v-model="SelectedProduct.product_price" type="number" prefix="₱" label="Price" :variant="variant" :readonly="readonly" :rules="[requiredRule]"/>
             </div>
             <div v-if="mode !== 'create'" class="input-container">
-              <v-text-field v-model="SelectedProduct.created_dt" label="Created At" :variant="filled" :readonly="true"/>
+              <v-text-field v-model="SelectedProduct.created_dt" label="Created At" variant="filled" :readonly="true"/>
             </div>
             <div v-if="mode !== 'create'" class="input-container">
-              <v-text-field v-model="SelectedProduct.last_modified_dt" label="Last Modified" :variant="filled" :readonly="true"/>
+              <v-text-field v-model="SelectedProduct.last_modified_dt" label="Last Modified" variant="filled" :readonly="true"/>
             </div>
           </div>
         </form>
@@ -60,9 +62,10 @@
     </div>
   </div>
 </template>
-
-
 <script>
+
+import CategoryService from '@/services/categories.service';
+
 export default {
   props: {
     show: {
@@ -82,19 +85,70 @@ export default {
     product(newProductValue) {
       this.SelectedProduct = {...newProductValue};
       this.originalProduct = {...newProductValue};
-    }
+    },
+    // This is used to watch the changes on the category_label drop down.
+    'SelectedProduct.category_label': function(newCategoryValue) {
+      // We set the subcategory label as null if the subcategory isn't in the list of subcategories of the specific category.
+      if (this.show && !this.categorySubcategoryMapping[this.SelectedProduct.category_label].includes(this.SelectedProduct.subcategory_label)) {
+        this.SelectedProduct.subcategory_label = null;
+      }
+    },
   },
   data() {
     return {
+      image_file: null, 
+      categorySubcategoryMapping: {},
+      idMapping: {},
       SelectedProduct: { ...this.product },
       originalProduct: { ...this.product }, // Store the original product data
-      requiredFields: ['product_name', 'product_brand', 'category', 'product_description', 'price']
+      requiredFields: ['product_name', 'product_brand', 'product_description', 'category_label', 'subcategory_label', 'product_price'] // category and sub category
     };
   },
+  mounted() {
+    this.fetchCategories();
+  },
+
   methods: {
+    async fetchCategories() {
+      const response = await CategoryService.findMany({});
+      const data = response.data;
+
+      // This is used to get the category ID. We first make a hash map
+      // Where the keys are the concatenation of category and subcategory label
+      // since we only have those two. So, to get the ID, we just concatenate
+      // The two and access it with this idMapping 
+      this.idMapping = data.reduce((acc, item) => {
+        const key = `${item.category_label}${item.subcategory_label}`;
+        acc[key] = item.category_id;
+        return acc;
+      }, {});
+
+      // We filter out  only the subcategories unique PER category
+      this.categorySubcategoryMapping = data.reduce((acc, item) => {
+        if (!acc[item.category_label]) {
+            acc[item.category_label] = [];
+        }
+        if (!acc[item.category_label].includes(item.subcategory_label)) {
+            acc[item.category_label].push(item.subcategory_label);
+        }
+        return acc;
+      }, {});
+    },
+
     submitForm() {
+      console.log(this.mode);
       if (this.mode !== 'view') {
-        this.$emit(this.mode, this.SelectedProduct);
+        const data = new FormData();
+
+        if (this.file) data.append('image', this.file);
+        data.append('product_name',this.SelectedProduct.product_name);
+        // data.append(this.SelectedProduct.subcategory_label);
+        data.append('category_id', this.idMapping[`${this.SelectedProduct.category_label}${this.SelectedProduct.subcategory_label}`]);
+        data.append('product_brand', this.SelectedProduct.product_brand);
+        data.append('product_description', this.SelectedProduct.product_description);
+        data.append('product_price', this.SelectedProduct.product_price);
+        data.append('product_id', this.SelectedProduct.product_id);
+        this.$emit(this.mode, data);
       }
       this.closeModal();
     },
@@ -108,19 +162,27 @@ export default {
     },
 
     handleImageUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
+      this.file = event.target.files[0];
+      if (this.file) {
         // Convert the selected file to a data URL
         const reader = new FileReader();
         reader.onload = () => {
           // Set the image URL to the SelectedProduct
-          this.SelectedProduct.image_url = reader.result; // Corrected property name
+          this.SelectedProduct.image_link = reader.result; 
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(this.file);
       }
     },
+
   },
   computed: {
+    categoryOptions(){
+      return Object.keys(this.categorySubcategoryMapping)
+    },
+    subCategoryOptions(){
+      return this.SelectedProduct.category_label ? this.categorySubcategoryMapping[this.SelectedProduct.category_label] : []
+    },
+    
     variant() {
       return this.mode === 'view' ? 'filled' : 'outlined'
     },
@@ -155,7 +217,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 9999; /* Ensure the modal is on top */
+  z-index: 1000; /* Ensure the modal is on top */
 }
 
 .modal-overlay {

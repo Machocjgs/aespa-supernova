@@ -17,28 +17,35 @@ class ProductService {
       });
   }
 
-  // updateUser(body){
-  //   const requestBody = {}
-  //   if (body.product_name) requestBody.product_name = body.product_name
-  //   if (body.email) requestBody.email = body.email
-  //   if (body.position) requestBody.position = body.position
-  //   if (body.tier_access) requestBody.tier_access = body.tier_access
 
-  //   return axios.patch(
-  //     `${API_URL}/${body.user_id}`, 
-  //     requestBody, 
-  //     {headers: {'token': localStorage.getItem('token')}}
-  //   )
-  // }
+  updateProduct(formData) {
+    return axios.patch(`${API_URL}/${formData.get('product_id')}`, formData, {
+      headers: {
+        'token':localStorage.getItem('token'),
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  }
 
-  // createUser(body){
-  //   return axios.post(`${API_URL}`, body, {headers: {'token': localStorage.getItem('token')}})
-  // }
+  createProduct(formData) {
+    return axios.post(`${API_URL}/${formData.get('product_id')}`, formData, {
+      headers:{
+        'token':localStorage.getItem('token'),
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  }
 
-  // deleteUser(user_id) {
-  //   console.log(user_id);
-  //   return axios.delete(`${API_URL}/${user_id}`, {headers:{'token': localStorage.getItem('token')}});
-  // }
+  
+  deleteProduct(productId) {
+    return axios.delete(`${API_URL}/${productId}`, {
+      headers: {
+        'token':localStorage.getItem('token'),
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  }
+
 }
 
 export default new ProductService();

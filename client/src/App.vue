@@ -1,8 +1,10 @@
 <template>
+  <v-app>
   <div class="app">
       <Sidebar v-if="shouldShowSidebar"/>
       <router-view />
   </div>
+</v-app>
 </template>
 
 <script>

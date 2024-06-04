@@ -214,23 +214,25 @@
         this.isSnackBarOpen = true
       },
   
-      async updateProduct(product) {
+      async updateProduct(newProductForm) {
         try {
-          await ProductService.updateProduct(product);
+          
+          const response = await ProductService.updateProduct(newProductForm);
+          console.log(response);
           this.showSnackBar('Product successfully updated!');
         } catch(err) {
           console.error(err);
           this.showSnackBar('Product update failed! Something went wrong');
         }
         console.log("UPDATE!");
-        const response = 
-        console.log(response);
+        
         this.closeModal()
       },
   
-      async createProduct(product) {
+      async createProduct(newProductForm) {
         try{
-          await ProductService.createProduct(product);
+          const response = await ProductService.createProduct(newProductForm);
+          console.log(response);
           this.showSnackBar("Product successfully created!");
         } catch(err) {
           console.error(err);
@@ -242,7 +244,8 @@
       
       async deleteProduct() {
         try {
-          await ProductService.deleteProduct(this.productToDelete.product_id);
+          response = await ProductService.deleteProduct(this.productToDelete.product_id);
+          console.log(response);
           this.showSnackBar("Product successfully deleted!");
         } catch (error) {
           console.error('Error deleting product:', error);
