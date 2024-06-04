@@ -101,7 +101,7 @@ export default {
       idMapping: {},
       SelectedProduct: { ...this.product },
       originalProduct: { ...this.product }, // Store the original product data
-      requiredFields: ['product_name', 'product_brand', 'product_description', 'category_label', 'subcategory_label', 'product_price'] // category and sub category
+      requiredFields: ['product_name', 'product_brand', 'product_description', 'category_label', 'subcategory_label', 'product_price', 'image_link'] // category and sub category
     };
   },
   mounted() {
