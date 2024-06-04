@@ -31,7 +31,6 @@ module.exports = (sequelize, Sequelize) => {
         timestamps: true,
         createdAt: 'created_dt',
         updatedAt: 'last_modified_dt'
-
     });
 
     return Size

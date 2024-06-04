@@ -15,24 +15,24 @@ const router = express.Router();
  * Get one category based on id only.
  *      e.g. /api/category/2
  */
-router.get("/:id", verifyToken, sizeController.find_one);
+router.get("/:id", verifyToken, sizeController.findOne);
 
 /**
  * Creates new category item.
  * Request body must contain all required fields.
  */
-router.post("/", verifyToken, sizeController.insert_one);
+router.post("/", verifyToken, sizeController.insertOne);
 
 /**
  * Updates a category based on id.
  * Request body must contain all required fields.
  */
-// sizeRoutes.patch("/:id", sizeController.update_one);
+sizeRoutes.patch("/:id", verifyToken, sizeController.updateOne);
 
 /**
  * Deletes a category based on id.
  */
-// sizeRoutes.delete("/:id", sizeController.delete_one);
+sizeRoutes.delete("/:id", verifyToken, sizeController.deleteOne);
 
 
 module.exports = router
