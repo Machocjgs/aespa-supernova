@@ -9,7 +9,11 @@ module.exports = (sequelize, Sequelize) => {
         },
         size_label: {
             type: Sequelize.STRING,
-            allownull: false
+            allownull: false,
+            unique: {
+                args: true,
+                msg: 'Size already existing!'
+            }
         },
         size_description: {
             type: Sequelize.STRING,

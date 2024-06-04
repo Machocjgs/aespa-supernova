@@ -22,9 +22,10 @@ const insertOne = async (req, res) => {
         return res.status(400).send({error: "size_label and size_description are required!"});
     }
     try {
-        return await  db.Size.create({size_label, size_description});
+        const response = await db.Size.create({size_label, size_description});
+        return res.send(response);
     } catch (error) {
-        return res.status(500).send({error: err.message});
+        return res.status(500).send({error: error.message});
     }
 };
 

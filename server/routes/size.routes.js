@@ -23,16 +23,18 @@ router.get("/:id", verifyToken, sizeController.findOne);
  */
 router.post("/", verifyToken, sizeController.insertOne);
 
+router.get("/", verifyToken, sizeController.findMany);
+
 /**
  * Updates a category based on id.
  * Request body must contain all required fields.
  */
-sizeRoutes.patch("/:id", verifyToken, sizeController.updateOne);
+router.patch("/:id", verifyToken, sizeController.updateOne);
 
 /**
  * Deletes a category based on id.
  */
-sizeRoutes.delete("/:id", verifyToken, sizeController.deleteOne);
+router.delete("/:id", verifyToken, sizeController.deleteOne);
 
 
 module.exports = router
