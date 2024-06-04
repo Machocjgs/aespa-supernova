@@ -1,174 +1,137 @@
 <template>
-  <div class="users-page-container">
-    <main class="users-page">
+  <div class="products-page-container">
+    <main class="products-page">
       <header class="header">
         <h1 class="header-title">Inventory</h1>
-        <div class="search-container">
-          <input
-            type="text"
-            v-model="search"
-            @input="fetchUsers"
-            placeholder="Search"
-            class="search-input"
-          />
-          <button @click="fetchUsers" class="search-button">
-            <span class="material-icons">search</span>
-          </button>
-        </div>
-      </header>
-      <div class="users-table-container">
-      <table>
-        <thead>
-          <tr>
-            <th @click="sortBy('user_name')" :class="{ 'sortable': true, 'sorted': sortKey === 'user_name' }">
-                User Name
-                <span v-if="sortKey === 'user_name'" class="material-icons">
-                  {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
-                </span>
-              </th>
-              <th @click="sortBy('email')" :class="{ 'sortable': true, 'sorted': sortKey === 'email' }">
-                Email
-                <span v-if="sortKey === 'email'" class="material-icons">
-                  {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
-                </span>
-              </th>
-              <th @click="sortBy('position')" :class="{ 'sortable': true, 'sorted': sortKey === 'position' }">
-                Position
-                <span v-if="sortKey === 'position'" class="material-icons">
-                  {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
-                </span>
-              </th>
-              <th @click="sortBy('created_dt')" :class="{ 'sortable': true, 'sorted': sortKey === 'created_dt' }">
-                Created
-                <span v-if="sortKey === 'created_dt'" class="material-icons">
-                  {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
-                </span>
-              </th>
-              <th @click="sortBy('last_modified_dt')" :class="{ 'sortable': true, 'sorted': sortKey === 'last_modified_dt' }">
-                Last Modified
-                <span v-if="sortKey === 'last_modified_dt'" class="material-icons">
-                  {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
-                </span>
-              </th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="user in sortedUsers" :key="user.user_id" @dblclick="viewUserModal(user)" class="clickable-row">
-            <td>{{ user.user_name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.position }}</td>
-            <td>{{ user.created_dt }}</td>
-            <td>{{ user.last_modified_dt }}</td>
-            <td>
-              <div class="row-actions">
-                <button @click="updateUserModal(user)" class="icon-button">
-                  <span class="material-icons">edit</span>
-                </button>
-                <button @click="confirmDeleteUser(user)" class="icon-button" v-if="local_user_id!=user.user_id">
-                  <span class="material-icons">delete</span>
-                </button>
+          <div class="search-container">
+              <div class="column-select-container">
+                  <select v-model="selectedCategory" class="column-select">
+                    <option value="">All Categories</option>
+                    <option v-for="category in uniqueCategories" :key="category" :value="category">{{ category }}</option>
+                  </select>
               </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    
+              <div class="search-input-container">
+                  <input
+                  type="text"
+                  v-model="search"
+                  @input="fetchProducts"
+                  placeholder="Search"
+                  class="search-input"
+                  />
+              </div>
+              <button @click="fetchProducts" class="search-button">
+              <span class="material-icons">search</span>
+              </button>
+          </div>
+      </header>
+      <div class="product-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Brand</th>
+              <th>Category</th>
+              <th>Sub Category</th>
+              <th>Price</th>
+              <th>Created</th>
+              <th>Last Modified</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="product in sortedProducts" :key="product.product_id" @dblclick="viewProductModal(product)" class="clickable-row">
+              <td>{{ product.product_name }}</td>
+              <td>{{ product.product_brand }}</td>
+              <td>{{ product.category_label }}</td>
+              <td>{{ product.subcategory_label }}</td>
+              <td>{{ product.product_price }}</td>
+              <td>{{ product.created_dt }}</td>
+              <td>{{ product.last_modified_dt }}</td>
+              <td>
+                <div class="row-actions">
+                  <button @click="updateProductModal(product)" class="icon-button">
+                    <span class="material-icons">edit</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </main>
   </div>
-  <Modal :show="isModalOpen" :mode="modalMode" :user="selectedUser" @create="createUser" @update="updateUser" @close="closeModal" />
-
-  <v-dialog v-model="isDeleteDialogOpen" max-width="500">
-    <v-card>
-      <v-card-title class="headline">Are you sure to delete this?</v-card-title>
-      <v-card-actions class="justify-center">
-        <v-spacer></v-spacer>
-        <v-btn color="red" @click="deleteUser">Yes</v-btn>
-        <v-btn color="grey" @click="isDeleteDialogOpen = false">No</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-  
-  <v-snackbar
-    v-model="isSnackBarOpen"
-    timeout=3000
-    class="text-center"
-  >
-    {{ snackBarText }}
-    <template v-slot:actions>
-      <v-btn
-        color="blue"
-        variant="text"
-        @click="isSnackBarOpen = false"
-      >
-        Close
-      </v-btn>
-    </template>
-  </v-snackbar>
 </template>
 
 <script>
-import Modal from '@/components/UserModal.vue';
-import UserService from '@/services/user.service';
+import Modal from '@/components/ProductModal.vue';
+import ProductService from '@/services/product.service';
+import CategoryService from '@/services/categories.service';
 
 export default {
   components: {
     Modal
   },
-  name: "User",
+  name: "Product",
   data() {
     return {
-      users: [],
+      products: [],
+      selectedCategory: '',
       search: '',
       sortKey: '',
       sortOrder: 'asc',
       isModalOpen: false,
-      selectedUser: null,
+      selectedProduct: null,
       modalMode: 'view',
-      local_user_id: null,
       isDeleteDialogOpen: false,
-      userToDelete: null,
+      productToDelete: null,
       isSnackBarOpen:false,
-      snackBarText:''
+      snackBarText:'',
+      categories: [],
     };
   },
   created() {
-    this.local_user_id = JSON.parse(localStorage.getItem('user')).user_id;
-    this.fetchUsers();
+    this.fetchProducts();
+    this.fetchCategories();
   },
   methods: {
-    async fetchUsers() {
+    async fetchProducts() {
       try {
-        const queryParams = {
-          search: this.search
-        };
-        const response = await UserService.findMany(queryParams);
-        this.users = response.data;
+        const queryParams = {};
+
+        console.log(this.selectedCategory)
+
+        if (this.selectedCategory) {
+          // If a specific column is selected, use it for search
+          queryParams['category_label'] = this.selectedCategory;
+        }
+            
+        const response = await ProductService.findMany(queryParams);
+
+        this.products = response.data;
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error('Error fetching products:', error);
       }
     },
-    updateUserModal(user) {
-      this.selectedUser = user;
+    updateProductModal(product) {
+      this.selectedProduct = product;
       this.modalMode = 'update';
       this.isModalOpen = true;
     },
 
-    viewUserModal(user) {
-      this.selectedUser = user;
+    viewProductModal(product) {
+      this.selectedProduct = product;
       this.modalMode = 'view';
       this.isModalOpen = true;
     },
 
-    createUserModal(user) {
-      this.selectedUser = user;
+    createProductModal(product) {
+      this.selectedProduct = product;
       this.modalMode = 'create';
       this.isModalOpen = true;
     },
 
-    confirmDeleteUser(user) {
-      this.userToDelete = user;
+    confirmDeleteProduct(product) {
+      this.productToDelete = product;
       this.isDeleteDialogOpen = true;
     },
 
@@ -177,41 +140,39 @@ export default {
       this.isSnackBarOpen = true
     },
 
-    async updateUser(user) {
+    async updateProduct(product) {
       try {
-        await UserService.updateUser(user);
-        this.showSnackBar('User successfully updated!');
+        await ProductService.updateProduct(product);
+        this.showSnackBar('Product successfully updated!');
       } catch(err) {
         console.error(err);
-        this.showSnackBar('User update failed! Something went wrong');
+        this.showSnackBar('Product update failed! Something went wrong');
       }
-      console.log("UPDATE!");
-      const response = 
-      console.log(response);
+      await this.fetchProducts();
       this.closeModal()
     },
 
-    async createUser(user) {
+    async createProduct(product) {
       try{
-        await UserService.createUser(user);
-        this.showSnackBar("User successfully created!");
+        await ProductService.createProduct(product);
+        this.showSnackBar("Product successfully created!");
       } catch(err) {
         console.error(err);
-        this.showSnackBar('User creation failed! Something went wrong');
+        this.showSnackBar('Product creation failed! Something went wrong');
       }
-      await this.fetchUsers();
+      await this.fetchProducts();
       this.closeModal()
     },
     
-    async deleteUser() {
+    async deleteProduct() {
       try {
-        await UserService.deleteUser(this.userToDelete.user_id);
-        this.showSnackBar("User successfully deleted!");
+        await ProductService.deleteProduct(this.productToDelete.product_id);
+        this.showSnackBar("Product successfully deleted!");
       } catch (error) {
-        console.error('Error deleting user:', error);
+        console.error('Error deleting product:', error);
         this.showSnackBar("Delete failed! Something went wrong.");
       }
-      await this.fetchUsers()
+      await this.fetchProducts();
       this.isDeleteDialogOpen = false;
     },
     sortBy(key) {
@@ -223,21 +184,51 @@ export default {
       }
     },
     async closeModal() {
-      await this.fetchUsers();
+      await this.fetchProducts();
       this.isModalOpen = false;
-      this.selectedUser = null;
+      this.selectedProduct = null;
       this.modalMode = 'view'; // Reset mode to 'view' after closing modal
+    },
+
+    async fetchCategories() {
+      try {
+        const queryParams = {};
+        const response = await CategoryService.findMany(queryParams);
+
+        this.categories = response.data
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
     },
   },
   computed: {
-    sortedUsers() {
-      return this.users.sort((a,b) => {
+    sortedProducts() {
+      return this.products.sort((a,b) => {
         let modifier = 1;
         if (this.sortOrder === 'desc') modifier = -1;
         if (a[this.sortKey] < b[this.sortKey]) return -1 * modifier;
         if (a[this.sortKey] > b[this.sortKey]) return 1 * modifier;
       });
-    }
+    },
+    uniqueCategories() {
+      try {
+        // Fetch categories from the server
+        const queryParams = {};
+        if (this.categories) {
+          // Return unique categories
+
+          return [...new Set(this.categories.map(category => category.category_label))]
+        } else {
+          console.error('Error fetching categories:', response);
+          // If fetching fails, fallback to computing unique categories from products
+          return [...new Set(this.products.map(product => product.category_label))];
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        // If an error occurs, fallback to computing unique categories from products
+        return [...new Set(this.products.map(product => product.category_label))];
+      }
+    },
   }
 };
 </script>
@@ -248,7 +239,7 @@ html, body {
   margin: 0;
 }
 
-.users-page-container {
+.products-page-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -260,7 +251,7 @@ html, body {
   background-color: #f9f9f9;
 }
 
-.users-page {
+.products-page {
   text-align: center;
   margin-bottom: 20px;
   width: 100%;
@@ -295,6 +286,16 @@ html, body {
   min-width: 300px
 }
 
+.column-select-container {
+  margin-right: 10px;
+  }
+
+.column-select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
 .create-button {
   padding: 8px 12px;
   border: 1px solid #ddd;
@@ -303,7 +304,7 @@ html, body {
   cursor: pointer;
 }
 
-.create-user {
+.create-product {
   vertical-align: middle;
   margin-left: 5px;
 }
@@ -314,7 +315,7 @@ html, body {
   border-radius: 4px;
 }
 
-.users-table-container {
+.product-table-container {
   width: 100%;
   overflow-x: auto;
 }

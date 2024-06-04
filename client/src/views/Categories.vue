@@ -182,25 +182,28 @@ export default {
       this.isSnackBarOpen = true
     },
 
-    async createCategory() {
-      try {
-        await CategoryService.createCategory(this.newCategoryName);
-        this.fetchCategories();
+    async createCategory(category) {
+      try{
+        await CategoryService.createCategory(category);
         this.showSnackBar("Category successfully created!");
-      } catch (error) {
-        console.error('Error creating category:', error);
-        this.showSnackBar("Category creation failed! Something went wrong.");
+      } catch(err) {
+        console.error(err);
+        this.showSnackBar('Category creation failed! Something went wrong');
       }
+      await this.fetchCategories();
+      this.closeModal()
     },
-    async deleteCategory(categoryId) {
+
+    async deleteCategory() {
       try {
-        await CategoryService.deleteCategory(categoryId);
-        this.fetchCategories();
+        await CategoryService.deleteCategory(this.categoryToDelete.category_id);
         this.showSnackBar("Category successfully deleted!");
       } catch (error) {
         console.error('Error deleting category:', error);
         this.showSnackBar("Category deletion failed! Something went wrong.");
       }
+      await this.fetchCategories()
+      this.isDeleteDialogOpen = false;
     },
     sortBy(key) {
       if (this.sortKey == key) {

@@ -63,7 +63,7 @@ export default {
     return {
       SelectedCategory: { ...this.category },
       originalCategory: { ...this.category }, // Store the original category data
-      requiredFields: ['category_name', 'category_brand', 'category', 'category_description', 'price']
+      requiredFields: ['category_label', 'subcategory_label']
     };
   },
   methods: {

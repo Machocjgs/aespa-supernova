@@ -72,7 +72,7 @@ aside {
     flex-direction: column;
     width: 80px;
     min-height: 100vh;
-    overflow: hidden;
+    // overflow: hidden;
     padding: 1rem;
     background-color: #F8C963; /* Updated background color */
     color: var(--grey); /* Updated text color */
