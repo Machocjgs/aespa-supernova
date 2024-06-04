@@ -38,12 +38,6 @@
                   {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
                 </span>
               </th>
-              <th @click="sortBy('tier_access')" :class="{ 'sortable': true, 'sorted': sortKey === 'tier_access' }">
-                Tier Access
-                <span v-if="sortKey === 'tier_access'" class="material-icons">
-                  {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
-                </span>
-              </th>
               <th @click="sortBy('created_dt')" :class="{ 'sortable': true, 'sorted': sortKey === 'created_dt' }">
                 Created
                 <span v-if="sortKey === 'created_dt'" class="material-icons">
@@ -64,7 +58,6 @@
             <td>{{ user.user_name }}</td>
             <td>{{ user.email }}</td>
             <td>{{ user.position }}</td>
-            <td>{{ user.tier_access }}</td>
             <td>{{ user.created_dt }}</td>
             <td>{{ user.last_modified_dt }}</td>
             <td>

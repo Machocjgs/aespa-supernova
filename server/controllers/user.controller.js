@@ -26,13 +26,12 @@ const update_one = async (req,res) => {
         res.status(400).send({message: "Invalid ID!"});
     }
 
-    const {user_name, email, position, tier_access} = req.body;
+    const {user_name, email, position} = req.body;
 
     const user_updates = {}
     if (user_name) user_updates.user_name = user_name;
     if (email) user_updates.email = email;
     if (position) user_updates.position = position;
-    if (tier_access) user_updates.tier_access = tier_access;
 
     try {
         const user = await db.User.findOne({
@@ -75,14 +74,14 @@ const find_many = (req, res) => {
 
 
 const insert_one = (req,res) => {
-    const {user_name, password, email, position, tier_access} = req.body
+    const {user_name, password, email, position} = req.body
 
     // Validate input parameters making sure they all have values
-    if (!user_name || !password || !email || !position || !tier_access) {
+    if (!user_name || !password || !email || !position) {
         res.status(400).send({error: "All fields are required!"});
     }
 
-    db.User.create({user_name, password, email, position, tier_access}).then(
+    db.User.create({user_name, password, email, position}).then(
         (_) => res.send({message:"User successfully created!"})
     ).catch(
         (err) => res.status(500).send({error:err.message})

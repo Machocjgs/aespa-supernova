@@ -38,14 +38,6 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING,
             allownull: false
         },
-        tier_access: {
-            type: Sequelize.INTEGER,
-            allownull: false
-        },
-        user_status: {
-            type: Sequelize.STRING,
-            defaultValue: 'inactive'
-        },
         created_dt: {
             type: Sequelize.DATE,
             allownull: false

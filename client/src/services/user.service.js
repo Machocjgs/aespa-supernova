@@ -16,7 +16,6 @@ class UserService {
     if (body.user_name) requestBody.user_name = body.user_name
     if (body.email) requestBody.email = body.email
     if (body.position) requestBody.position = body.position
-    if (body.tier_access) requestBody.tier_access = body.tier_access
 
     return axios.patch(
       `${API_URL}/${body.user_id}`, 
