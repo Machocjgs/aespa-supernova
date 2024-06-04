@@ -3,14 +3,6 @@
       <main class="products-page">
         <header class="header">
           <h1 class="header-title">Products</h1>
-          <!-- <div class="search-container">
-            <input
-              type="text"
-              v-model="search"
-              @input="fetchProducts"
-              placeholder="Search"
-              class="search-input"
-            /> -->
             <div class="search-container">
                 <div class="column-select-container">
                     <select v-model="selectedColumn" class="column-select">

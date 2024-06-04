@@ -23,6 +23,10 @@
                 <span class="material-icons-round">inventory</span>
                 <span class="text">Inventory</span>
             </router-link>
+            <router-link class="button" to="/settings">
+                <span class="material-icons-round">settings</span>
+                <span class="text">Settings</span>
+            </router-link>
             <router-link class="button" to="/users">
                 <span class="material-icons-round">badge</span>
                 <span class="text">Users</span>
