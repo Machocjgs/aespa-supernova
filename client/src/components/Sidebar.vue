@@ -23,9 +23,9 @@
                 <span class="material-icons-round">inventory</span>
                 <span class="text">Inventory</span>
             </router-link>
-            <router-link class="button" to="/settings">
+            <router-link class="button" to="/categories">
                 <span class="material-icons-round">settings</span>
-                <span class="text">Settings</span>
+                <span class="text">Categories</span>
             </router-link>
             <router-link class="button" to="/users">
                 <span class="material-icons-round">badge</span>

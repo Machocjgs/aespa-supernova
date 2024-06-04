@@ -32,8 +32,8 @@ const router = createRouter({
             component: () => import('../views/Inventory.vue')
         },
         {
-            path: '/settings',
-            component: () => import('../views/Settings.vue')
+            path: '/categories',
+            component: () => import('../views/Categories.vue')
         },
         {
             path: '/signout',

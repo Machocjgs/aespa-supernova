@@ -2,7 +2,7 @@
   <div class="categories-page-container">
     <main class="categories-page">
       <header class="header">
-        <h1 class="header-title">Manage Categories</h1>
+        <h1 class="header-title">Categories</h1>
         <div class="search-container">
           <div class="column-select-container">
             <select v-model="selectedColumn" class="column-select">
@@ -69,9 +69,6 @@
               <td>{{ category.last_modified_dt }}</td>
               <td>
                 <div class="row-actions">
-                  <button @click="updateCategoryModal(category)" class="icon-button">
-                    <span class="material-icons">edit</span>
-                  </button>
                   <button @click="confirmDeleteCategory(category)" class="icon-button">
                     <span class="material-icons">delete</span>
                   </button>
@@ -116,7 +113,7 @@
 
 <script>
 import Modal from '@/components/CategoryModal.vue';
-import CategoryService from '@/services/settings.service';
+import CategoryService from '@/services/categories.service';
 
 export default {
   components: {
@@ -163,12 +160,6 @@ export default {
       }
     },
 
-    updateCategoryModal(category) {
-      this.selectedCategory = category;
-      this.modalMode = 'update';
-      this.isModalOpen = true;
-    },
-
     viewCategoryModal(category) {
       this.selectedCategory = category;
       this.modalMode = 'view';
@@ -200,10 +191,6 @@ export default {
         console.error('Error creating category:', error);
         this.showSnackBar("Category creation failed! Something went wrong.");
       }
-    },
-    async editCategory(category) {
-      // Implement edit category functionality
-      console.log('Editing category:', category);
     },
     async deleteCategory(categoryId) {
       try {

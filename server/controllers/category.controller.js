@@ -65,13 +65,22 @@ const find_one = (req, res) => {
 }
 
 const find_all = (req, res) => {
-    const {category_id, category_label, sub_category_label } = req.query;
+    const {category_id, category_label, subcategory_label, all_search } = req.query;
 
     // If no query is passed, condition will be something like "SELECT * FROM ..."
     const condition = {};
-    if (category_id) condition.category_id = category_id;
-    if (category_label) condition.category_label = category_label;
-    if (sub_category_label) condition.sub_category_label = sub_category_label;
+
+    if (all_search) {
+        // If all_search is selected, search across all relevant columns including category fields
+        condition[db.Sequelize.Op.or] = [
+            { category_label: { [db.Sequelize.Op.like]: `%${all_search}%` } },
+            { subcategory_label: { [db.Sequelize.Op.like]: `%${all_search}%` } },
+        ];
+    } else {
+        if (category_id) condition.category_id = { [db.Sequelize.Op.like]: `%${category_id}%` };
+        if (category_label) condition.category_label = { [db.Sequelize.Op.like]: `%${category_label}%` };
+        if (subcategory_label) condition.subcategory_label = { [db.Sequelize.Op.like]: `%${subcategory_label}%` };
+    }
 
     db.Category.findAll({where:condition}).then(
         (data) => res.send(data)
