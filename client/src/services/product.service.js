@@ -28,14 +28,13 @@ class ProductService {
   }
 
   createProduct(formData) {
-    return axios.post(`${API_URL}/${formData.get('product_id')}`, formData, {
+    return axios.post(API_URL, formData, {
       headers:{
         'token':localStorage.getItem('token'),
         'Content-Type': 'multipart/form-data'
       }
     })
   }
-
   
   deleteProduct(productId) {
     return axios.delete(`${API_URL}/${productId}`, {
