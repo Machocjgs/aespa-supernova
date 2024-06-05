@@ -4,8 +4,6 @@ const API_URL = 'http://localhost:3000/api/size/';
 
 class SizeService {
   findMany(params) {
-
-    console.log(params)
     const payload = {
       method: 'get',
       url: API_URL,
