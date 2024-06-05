@@ -113,7 +113,7 @@
 
 <script>
 import Modal from '@/components/CategoryModal.vue';
-import CategoryService from '@/services/categories.service';
+import CategoryService from '@/services/category.service';
 
 export default {
   components: {

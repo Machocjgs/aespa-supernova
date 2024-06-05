@@ -64,7 +64,7 @@
 </template>
 <script>
 
-import CategoryService from '@/services/categories.service';
+import CategoryService from '@/services/category.service';
 
 export default {
   props: {

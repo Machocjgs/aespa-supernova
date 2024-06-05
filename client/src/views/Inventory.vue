@@ -14,12 +14,12 @@
                   <input
                   type="text"
                   v-model="search"
-                  @input="fetchProducts"
+                  @input="fetchInventories"
                   placeholder="Search"
                   class="search-input"
                   />
               </div>
-              <button @click="fetchProducts" class="search-button">
+              <button @click="fetchInventories" class="search-button">
               <span class="material-icons">search</span>
               </button>
           </div>
@@ -28,28 +28,77 @@
         <table>
           <thead>
             <tr>
-              <th>Product Name</th>
-              <th>Brand</th>
-              <th>Category</th>
-              <th>Sub Category</th>
-              <th>Price</th>
-              <th>Created</th>
-              <th>Last Modified</th>
+              <th @click="sortBy('product_name')" :class="{ 'sortable': true, 'sorted': sortKey === 'product_name' }">
+                  Product Name
+                  <span v-if="sortKey === 'product_name'" class="material-icons">
+                    {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                  </span>
+                </th>
+                <th @click="sortBy('product_brand')" :class="{ 'sortable': true, 'sorted': sortKey === 'product_brand' }">
+                  Brand
+                  <span v-if="sortKey === 'product_brand'" class="material-icons">
+                    {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                  </span>
+                </th>
+                <th @click="sortBy('category_label')" :class="{ 'sortable': true, 'sorted': sortKey === 'category_label' }">
+                  Category
+                  <span v-if="sortKey === 'category_label'" class="material-icons">
+                    {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                  </span>
+                </th>
+                <th @click="sortBy('subcategory_label')" :class="{ 'sortable': true, 'sorted': sortKey === 'subcategory_label' }">
+                  Sub Category
+                  <span v-if="sortKey === 'subcategory_label'" class="material-icons">
+                    {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                  </span>
+                </th>
+                <th @click="sortBy('size_label')" :class="{ 'sortable': true, 'sorted': sortKey === 'size_label' }">
+                  Size
+                  <span v-if="sortKey === 'size_label'" class="material-icons">
+                    {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                  </span>
+                </th>
+                <th @click="sortBy('quantity')" :class="{ 'sortable': true, 'sorted': sortKey === 'quantity' }">
+                  Quantity
+                  <span v-if="sortKey === 'quantity'" class="material-icons">
+                    {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                  </span>
+                </th>
+                <th @click="sortBy('status')" :class="{ 'sortable': true, 'sorted': sortKey === 'status' }">
+                  Status
+                  <span v-if="sortKey === 'status'" class="material-icons">
+                    {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                  </span>
+                </th>
+                <th @click="sortBy('created_dt')" :class="{ 'sortable': true, 'sorted': sortKey === 'created_dt' }">
+                  Created
+                  <span v-if="sortKey === 'created_dt'" class="material-icons">
+                    {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                  </span>
+                </th>
+                <th @click="sortBy('last_modified_dt')" :class="{ 'sortable': true, 'sorted': sortKey === 'last_modified_dt' }">
+                  Last Modified
+                  <span v-if="sortKey === 'last_modified_dt'" class="material-icons">
+                    {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                  </span>
+                </th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="product in sortedProducts" :key="product.product_id" @dblclick="viewProductModal(product)" class="clickable-row">
-              <td>{{ product.product_name }}</td>
-              <td>{{ product.product_brand }}</td>
-              <td>{{ product.category_label }}</td>
-              <td>{{ product.subcategory_label }}</td>
-              <td>{{ product.product_price }}</td>
-              <td>{{ product.created_dt }}</td>
-              <td>{{ product.last_modified_dt }}</td>
+            <tr v-for="inventory in sortedProducts" :key="inventory.product_id" @dblclick="viewInventoryModal(inventory)" class="clickable-row">
+              <td>{{ inventory.product_name }}</td>
+              <td>{{ inventory.product_brand }}</td>
+              <td>{{ inventory.category_label }}</td>
+              <td>{{ inventory.subcategory_label }}</td>
+              <td>{{ inventory.size_label }}</td>
+              <td>{{ inventory.quantity }}</td>
+              <td>{{ inventory.status }}</td>
+              <td>{{ inventory.created_dt }}</td>
+              <td>{{ inventory.last_modified_dt }}</td>
               <td>
                 <div class="row-actions">
-                  <button @click="updateProductModal(product)" class="icon-button">
+                  <button @click="updateInventoryModal(inventory)" class="icon-button">
                     <span class="material-icons">edit</span>
                   </button>
                 </div>
@@ -60,41 +109,58 @@
       </div>
     </main>
   </div>
+  <Modal :show="isModalOpen" :mode="modalMode" :inventory="selectedInventory" @create="createInventory" @update="updateInventory" @close="closeModal" />
+  <v-snackbar
+      v-model="isSnackBarOpen"
+      timeout=3000
+      class="text-center"
+    >
+      {{ snackBarText }}
+      <template v-slot:actions>
+        <v-btn
+          color="blue"
+          variant="text"
+          @click="isSnackBarOpen = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
 </template>
 
 <script>
-import Modal from '@/components/ProductModal.vue';
-import ProductService from '@/services/product.service';
-import CategoryService from '@/services/categories.service';
+import Modal from '@/components/InventoryModal.vue';
+import InventoryService from '@/services/inventory.service';
+import CategoryService from '@/services/category.service';
 
 export default {
   components: {
     Modal
   },
-  name: "Product",
+  name: "Inventory",
   data() {
     return {
-      products: [],
+      inventories: [],
       selectedCategory: '',
       search: '',
       sortKey: '',
       sortOrder: 'asc',
       isModalOpen: false,
-      selectedProduct: null,
+      selectedInventory: null,
       modalMode: 'view',
       isDeleteDialogOpen: false,
-      productToDelete: null,
+      inventoryToDelete: null,
       isSnackBarOpen:false,
       snackBarText:'',
       categories: [],
     };
   },
   created() {
-    this.fetchProducts();
+    this.fetchInventories();
     this.fetchCategories();
   },
   methods: {
-    async fetchProducts() {
+    async fetchInventories() {
       try {
         const queryParams = {};
 
@@ -105,34 +171,31 @@ export default {
           queryParams['category_label'] = this.selectedCategory;
         }
             
-        const response = await ProductService.findMany(queryParams);
+        const response = await InventoryService.findMany(queryParams);
 
-        this.products = response.data;
+        this.inventories = response.data;
       } catch (error) {
         console.error('Error fetching products:', error);
       }
     },
-    updateProductModal(product) {
-      this.selectedProduct = product;
-      this.modalMode = 'update';
+    updateInventoryModal(inventory) {
+      console.log(inventory);
+      this.selectedInventory = inventory;
+      this.modalMode = 'edit';
       this.isModalOpen = true;
     },
 
-    viewProductModal(product) {
-      this.selectedProduct = product;
+    viewInventoryModal(inventory) {
+      this.selectedInventory = inventory;
+      console.log(Object.keys(this.selectedInventory))
       this.modalMode = 'view';
       this.isModalOpen = true;
     },
 
-    createProductModal(product) {
-      this.selectedProduct = product;
+    createInventoryModal(inventory) {
+      this.selectedInventory = inventory;
       this.modalMode = 'create';
       this.isModalOpen = true;
-    },
-
-    confirmDeleteProduct(product) {
-      this.productToDelete = product;
-      this.isDeleteDialogOpen = true;
     },
 
     showSnackBar(text){
@@ -140,39 +203,39 @@ export default {
       this.isSnackBarOpen = true
     },
 
-    async updateProduct(product) {
+    async updateInventory(inventory) {
       try {
-        await ProductService.updateProduct(product);
+        await InventoryService.updateProduct(inventory);
         this.showSnackBar('Product successfully updated!');
       } catch(err) {
         console.error(err);
         this.showSnackBar('Product update failed! Something went wrong');
       }
-      await this.fetchProducts();
+      await this.fetchInventories();
       this.closeModal()
     },
 
-    async createProduct(product) {
+    async createInventory(inventory) {
       try{
-        await ProductService.createProduct(product);
+        await InventoryService.createProduct(inventory);
         this.showSnackBar("Product successfully created!");
       } catch(err) {
         console.error(err);
         this.showSnackBar('Product creation failed! Something went wrong');
       }
-      await this.fetchProducts();
+      await this.fetchInventories();
       this.closeModal()
     },
     
-    async deleteProduct() {
+    async deleteInventory() {
       try {
-        await ProductService.deleteProduct(this.productToDelete.product_id);
+        await InventoryService.deleteProduct(this.inventoryToDelete.product_id);
         this.showSnackBar("Product successfully deleted!");
       } catch (error) {
         console.error('Error deleting product:', error);
         this.showSnackBar("Delete failed! Something went wrong.");
       }
-      await this.fetchProducts();
+      await this.fetchInventories();
       this.isDeleteDialogOpen = false;
     },
     sortBy(key) {
@@ -184,9 +247,9 @@ export default {
       }
     },
     async closeModal() {
-      await this.fetchProducts();
+      await this.fetchInventories();
       this.isModalOpen = false;
-      this.selectedProduct = null;
+      this.selectedInventory = null;
       this.modalMode = 'view'; // Reset mode to 'view' after closing modal
     },
 
@@ -203,7 +266,7 @@ export default {
   },
   computed: {
     sortedProducts() {
-      return this.products.sort((a,b) => {
+      return this.inventories.sort((a,b) => {
         let modifier = 1;
         if (this.sortOrder === 'desc') modifier = -1;
         if (a[this.sortKey] < b[this.sortKey]) return -1 * modifier;
@@ -221,12 +284,12 @@ export default {
         } else {
           console.error('Error fetching categories:', response);
           // If fetching fails, fallback to computing unique categories from products
-          return [...new Set(this.products.map(product => product.category_label))];
+          return [...new Set(this.inventories.map(product => product.category_label))];
         }
       } catch (error) {
         console.error('Error fetching categories:', error);
         // If an error occurs, fallback to computing unique categories from products
-        return [...new Set(this.products.map(product => product.category_label))];
+        return [...new Set(this.inventories.map(product => product.category_label))];
       }
     },
   }
