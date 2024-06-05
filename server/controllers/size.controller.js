@@ -82,27 +82,24 @@ const updateOne = async (req,res) => {
 
 const findMany = async (req, res) => {
     const {
-        size_id,
         size_label,
         size_description,
         all_search
-    } = req.body;
+    } = req.query;
 
     const condition = {};
 
     if (all_search) {
         // If all_search is selected, search across all relevant columns including category fields
         condition[db.Sequelize.Op.or] = [
-            {size_id: { [db.Sequelize.Op.like]: `%${all_search}%` }},
             {size_label: { [db.Sequelize.Op.like]: `%${all_search}%` }},
             {size_description: { [db.Sequelize.Op.like]: `%${all_search}%` }},
         ];
     } else {
-        if (size_id) condition.size_id = { [db.Sequelize.Op.like]: `%${size_id}%` };
         if (size_label) condition.size_label = { [db.Sequelize.Op.like]: `%${size_label}%` };
         if (size_description) condition.size_description = { [db.Sequelize.Op.like]: `%${size_description}%` };
     }
-
+    
     try {
         const result = await db.Size.findAll({where:condition})
         return res.send(result);

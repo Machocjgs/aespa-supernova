@@ -1,8 +1,13 @@
 <template>
   <div class="categories-page-container">
-    <main class="categories-page">
+    <!-- Tabs for categories and sizes -->
+    <div class="tab-container">
+      <button class="tab-button" :class="{ 'active': activeTab === 'categories' }" @click="activeTab = 'categories'">Categories</button>
+      <button class="tab-button" :class="{ 'active': activeTab === 'size' }" @click="activeTab = 'size'">Sizes</button>
+    </div>
+    <main v-if="activeTab === 'categories'" class="categories-page">
       <header class="header">
-        <h1 class="header-title">Categories</h1>
+        <h2 class="header-title">Categories</h2>
         <div class="search-container">
           <div class="column-select-container">
             <select v-model="selectedColumn" class="column-select">
@@ -79,9 +84,82 @@
         </table>
       </div>
     </main>
+
+    <main v-if="activeTab === 'size'" class="categories-page">
+      <header class="header">
+        <h2 class="header-title">Sizes</h2>
+        <div class="search-container">
+          <div class="search-input-container">
+            <input
+              type="text"
+              v-model="search"
+              @input="fetchSizes"
+              placeholder="Search"
+              class="search-input"
+            />
+          </div>
+          <button @click="fetchSizes" class="search-button">
+            <span class="material-icons">search</span>
+          </button>
+          <button @click="createSizeModal" class="create-button">
+            <span class="material-icons">add</span>
+            <span class="create-category">Add Size</span>
+          </button>
+        </div>
+      </header>
+      <div class="category-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th @click="sortBySize('size_label')" :class="{ 'sortable': true, 'sorted': sizeSortKey === 'size_label' }">
+                Size Label
+                <span v-if="sizeSortKey === 'size_label'" class="material-icons">
+                  {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                </span>
+              </th>
+              <th @click="sortBySize('size_description')" :class="{ 'sortable': true, 'sorted': sizeSortKey === 'size_description' }">
+                Size Description
+                <span v-if="sizeSortKey === 'size_description'" class="material-icons">
+                  {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                </span>
+              </th>
+              <th @click="sortBySize('created_dt')" :class="{ 'sortable': true, 'sorted': sizeSortKey === 'created_dt' }">
+                Created
+                <span v-if="sizeSortKey === 'created_dt'" class="material-icons">
+                  {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                </span>
+              </th>
+              <th @click="sortBySize('last_modified_dt')" :class="{ 'sortable': true, 'sorted': sizeSortKey === 'last_modified_dt' }">
+                Last Modified
+                <span v-if="sizeSortKey === 'last_modified_dt'" class="material-icons">
+                  {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
+                </span>
+              </th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="size in sortedSizes" :key="size.size_id" @dblclick="viewSizeModal(size)" class="clickable-row">
+              <td>{{ size.size_label }}</td>
+              <td>{{ size.size_description }}</td>
+              <td>{{ size.created_dt }}</td>
+              <td>{{ size.last_modified_dt }}</td>
+              <td>
+                <div class="row-actions">
+                  <button @click="confirmDeleteSize(size)" class="icon-button">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
   </div>
-  <Modal :show="isModalOpen" :mode="modalMode" :category="selectedCategory" @create="createCategory" @update="updateCategory" @close="closeModal" />
-  
+  <Modal :show="isModalOpen" :mode="modalMode" :category="selectedCategory" @create="createCategory" @close="closeModal" />
+  <SizeModal :show="isSizeModalOpen" :mode="sizeModalMode" :size="selectedSize" @create="createSize" @close="closeSizeModal" />
+
   <v-dialog v-model="isDeleteDialogOpen" max-width="500">
     <v-card>
       <v-card-title class="headline">Are you sure to delete this?</v-card-title>
@@ -89,6 +167,17 @@
         <v-spacer></v-spacer>
         <v-btn color="red" @click="deleteCategory">Yes</v-btn>
         <v-btn color="grey" @click="isDeleteDialogOpen = false">No</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog v-model="isDeleteSizeDialogOpen" max-width="500">
+    <v-card>
+      <v-card-title class="headline">Are you sure to delete this size?</v-card-title>
+      <v-card-actions class="justify-center">
+        <v-spacer></v-spacer>
+        <v-btn color="red" @click="deleteSize">Yes</v-btn>
+        <v-btn color="grey" @click="isDeleteSizeDialogOpen = false">No</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -113,31 +202,44 @@
 
 <script>
 import Modal from '@/components/CategoryModal.vue';
+import SizeModal from '@/components/SizeModal.vue';
 import CategoryService from '@/services/category.service';
+import SizeService from '@/services/sizes.service';
 
 export default {
   components: {
-    Modal
+    Modal,
+    SizeModal
   },
   name: "Category",
   data() {
     return {
       categories: [],
+      sizes: [],
       selectedColumn: '',
       search: '',
       sortKey: '',
+      sizeSortKey: '',
       sortOrder: 'asc',
+      sizeSortOrder: 'asc',
       isModalOpen: false,
+      isSizeModalOpen: false,
       selectedCategory: null,
+      selectedSize: null,
       modalMode: 'view',
+      sizeModalMode: 'view',
       isDeleteDialogOpen: false,
+      isDeleteSizeDialogOpen: false,
       categoryToDelete: null,
-      isSnackBarOpen:false,
-      snackBarText:''
+      sizeToDelete: null,
+      isSnackBarOpen: false,
+      snackBarText: '',
+      activeTab: 'categories',
     };
   },
   created() {
     this.fetchCategories();
+    this.fetchSizes();
   },
   methods: {
     async fetchCategories() {
@@ -160,10 +262,30 @@ export default {
       }
     },
 
+    async fetchSizes() {
+      try {
+        const queryParams = {};
+
+        // If no specific column is selected, apply search to all columns
+        queryParams['all_search'] = this.search;
+        const response = await SizeService.findMany(queryParams);
+
+        this.sizes = response.data;
+      } catch (error) {
+        console.error('Error fetching sizes:', error);
+      }
+    },
+
     viewCategoryModal(category) {
       this.selectedCategory = category;
       this.modalMode = 'view';
       this.isModalOpen = true;
+    },
+
+    viewSizeModal(size) {
+      this.selectedSize = size;
+      this.sizeModalMode = 'view';
+      this.isSizeModalOpen = true;
     },
 
     createCategoryModal(category) {
@@ -172,9 +294,20 @@ export default {
       this.isModalOpen = true;
     },
 
+    createSizeModal(size) {
+      this.selectedSize = size;
+      this.sizeModalMode = 'create';
+      this.isSizeModalOpen = true;
+    },
+
     confirmDeleteCategory(category) {
       this.categoryToDelete = category;
       this.isDeleteDialogOpen = true;
+    },
+
+    confirmDeleteSize(size) {
+      this.sizeToDelete = size;
+      this.isDeleteSizeDialogOpen = true;
     },
 
     showSnackBar(text){
@@ -194,6 +327,18 @@ export default {
       this.closeModal()
     },
 
+    async createSize(size) {
+      try{
+        await SizeService.createSize(size);
+        this.showSnackBar("Category successfully created!");
+      } catch(err) {
+        console.error(err);
+        this.showSnackBar('Category creation failed! Something went wrong');
+      }
+      await this.fetchSizes();
+      this.closeSizeModal()
+    },
+
     async deleteCategory() {
       try {
         await CategoryService.deleteCategory(this.categoryToDelete.category_id);
@@ -205,6 +350,19 @@ export default {
       await this.fetchCategories()
       this.isDeleteDialogOpen = false;
     },
+
+    async deleteSize() {
+      try {
+        await SizeService.deleteSize(this.sizeToDelete.size_id);
+        this.showSnackBar("Size successfully deleted!");
+      } catch (error) {
+        console.error('Error deleting size:', error);
+        this.showSnackBar("Size deletion failed! Something went wrong.");
+      }
+      await this.fetchSizes()
+      this.isDeleteSizeDialogOpen = false;
+    },
+
     sortBy(key) {
       if (this.sortKey == key) {
         this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
@@ -213,11 +371,27 @@ export default {
         this.sortOrder = 'asc';
       }
     },
+
+    sortBySize(key) {
+      if (this.sizeSortKey == key) {
+        this.sizeSortOrder = this.sizeSortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sizeSortKey = key;
+        this.sizeSortOrder = 'asc';
+      }
+    },
+
     async closeModal() {
       await this.fetchCategories();
       this.isModalOpen = false;
       this.selectedCategory = null;
       this.modalMode = 'view'; // Reset mode to 'view' after closing modal
+    },
+    async closeSizeModal() {
+      await this.fetchSizes();
+      this.isSizeModalOpen = false;
+      this.selectedSize = null;
+      this.sizeModalMode = 'view'; // Reset mode to 'view' after closing modal
     },
   }
   ,
@@ -228,6 +402,14 @@ export default {
         if (this.sortOrder === 'desc') modifier = -1;
         if (a[this.sortKey] < b[this.sortKey]) return -1 * modifier;
         if (a[this.sortKey] > b[this.sortKey]) return 1 * modifier;
+      });
+    },
+    sortedSizes() {
+      return this.sizes.sort((a,b) => {
+        let modifier = 1;
+        if (this.sizeSortOrder === 'desc') modifier = -1;
+        if (a[this.sizeSortKey] < b[this.sizeSortKey]) return -1 * modifier;
+        if (a[this.sizeSortKey] > b[this.sizeSortKey]) return 1 * modifier;
       });
     }
   }
@@ -395,5 +577,32 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+
+  .tab-container {
+    display: flex;
+    padding-left: 30px;
+    width: 100%;
+  }
+
+  .tab-button {
+    padding: 10px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .tab-button.active {
+    font-weight: bold;
+    color: #333;
+    border-bottom: 3px solid #F8C963;
+    background-color: #f7e6bfea;
+  }
+
+  .categories-page {
+    flex: 1;
+    padding-top: 0px;
   }
   </style>
