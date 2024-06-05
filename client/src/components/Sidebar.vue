@@ -25,7 +25,7 @@
             </router-link>
             <router-link class="button" to="/categories">
                 <span class="material-icons-round">settings</span>
-                <span class="text">Categories</span>
+                <span class="text">Settings</span>
             </router-link>
             <router-link class="button" to="/users">
                 <span class="material-icons-round">badge</span>

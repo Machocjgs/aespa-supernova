@@ -10,10 +10,10 @@
           <div class="form-group">
             <div class="input-row">
               <div v-if="mode !== 'create'" class="input-container input-margin">
-                <v-text-field label="Inventory ID" v-model="SelectedInventory.inventory_id" variant="filled" readonly="true" />
+                <v-text-field label="Inventory ID" v-model="SelectedInventory.inventory_id" variant="filled" :readonly="true" />
               </div>
               <div class="input-container">
-                <v-select :items="['1', '2','3']" v-model="SelectedInventory.product_name" label="Product" :readonly="mode!=='create'" :rules="[requiredRule]"> </v-select>
+                <v-select :items="productOptions" v-model="SelectedInventory.product_name" label="Product" :readonly="mode!=='create'" :rules="[requiredRule]"> </v-select>
               </div>
             </div>
 
@@ -31,15 +31,15 @@
             </div>
 
             <div class="input-row">
-              <v-text-field label="Status" v-model="SelectedInventory.status" variant="filled" :readonly="readonly"/>
+              <v-select :items="['In stock', 'Out of stock']" v-model="SelectedInventory.status" label="Status" :readonly="mode==='view'" :rules="[requiredRule]"> </v-select>
             </div>
 
             <div class="input-row">
               <div class="input-container input-margin">
-                <v-text-field label="Quantity" v-model="SelectedInventory.quantity" variant="filled" :readonly="readonly"/>
+                <v-text-field label="Quantity" v-model="SelectedInventory.quantity" :readonly="readOnly" type="number" min="0" oninput="if(this.value<0) this.value=0"/>
               </div>
               <div class="input-container">
-                <v-select :items="['S', 'M','L']" v-model="SelectedInventory.size_label" label="Size" :readonly="readonly" :rules="[requiredRule]"> </v-select>
+                <v-select :items="sizeOptions" v-model="SelectedInventory.size_label" label="Size" :readonly="mode!=='create'" :rules="[requiredRule]"> </v-select>
               </div>
             </div>
             
@@ -65,6 +65,7 @@
 <script>
 
 import productService  from '@/services/product.service';
+import sizesService from '@/services/sizes.service';
 
 export default {
   props: {
@@ -85,18 +86,68 @@ export default {
     inventory(newInventoryValue) {
       this.SelectedInventory = {...newInventoryValue};
       this.originalInventory = {...newInventoryValue};
+    },
+    'SelectedInventory.product_name': function(productId){
+      if (this.mode === 'create'){
+        this.SelectedInventory.product_brand = this.productMapping[productId]['product_brand'];
+        this.SelectedInventory.category_label = this.productMapping[productId]['category_label'];
+        this.SelectedInventory.subcategory_label = this.productMapping[productId]['subcategory_label'];
+        this.SelectedInventory.product_id = this.productMapping[productId]['product_id'];
+      }
+    },
+    'SelectedInventory.size_label': function(sizeId){
+      this.SelectedInventory.size_id = sizeId;
     }
   },
   data() {
+    this.fetchProducts();
+    this.fetchSizes();
     return {
+      productOptions: [],
+      productMapping: {},
+      sizeOptions: [],
+      sizeMapping: {},
       SelectedInventory: { ...this.inventory },
       originalInventory: { ...this.inventory }, // Store the original category data
       requiredFields: ['quantity', 'status']
     };
   },
   methods: {
-    async fetchProducts(){
+    async fetchSizes(){
+      const response = await sizesService.findMany({});
+      const sizeData = response.data;
 
+      const options = []
+      for (const item of sizeData) {
+        // Create hashmap of id: size;
+        this.sizeMapping[item.size_id] = item;
+        // Size Option list
+        options.push({
+          title: item.size_label,
+          value: item.size_id
+        });
+      }
+
+      this.sizeOptions = options;
+      
+    },
+
+    async fetchProducts(){
+      const productResponse = await productService.findMany({});
+      const productData = productResponse.data;
+      // Create hashmap of id: product;
+      this.productMapping = {};
+      const options = [];
+      for (const item of productData) {
+        // hashmap for getting product details
+        this.productMapping[item.product_id] = item;
+        // Product Option list
+        options.push({
+          title: item.product_name,
+          value: item.product_id
+        });
+      }
+      this.productOptions = options;
     },
     submitForm() {
       if (this.mode !== 'view') {
@@ -115,16 +166,14 @@ export default {
 
   },
   computed: {
-    productOptions() {
-      return 
-
-    },
     variant() {
       return this.mode === 'view' ? 'filled' : 'outlined'
     },
-    readonly() {
+
+    readOnly() {
       return this.mode === 'view'
     },
+
     changesMade() {
       // Check if any changes have been made to the category data
       if (this.mode !== 'create'){
@@ -153,7 +202,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 9999; /* Ensure the modal is on top */
+  z-index: 1000; /* Ensure the modal is on top */
 }
 
 .modal-overlay {

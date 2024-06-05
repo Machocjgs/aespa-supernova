@@ -4,23 +4,10 @@
       <header class="header">
         <h1 class="header-title">Inventory</h1>
           <div class="search-container">
-              <div class="column-select-container">
-                  <select v-model="selectedCategory" class="column-select">
-                    <option value="">All Categories</option>
-                    <option v-for="category in uniqueCategories" :key="category" :value="category">{{ category }}</option>
-                  </select>
-              </div>
-              <div class="search-input-container">
-                  <input
-                  type="text"
-                  v-model="search"
-                  @input="fetchInventories"
-                  placeholder="Search"
-                  class="search-input"
-                  />
-              </div>
-              <button @click="fetchInventories" class="search-button">
-              <span class="material-icons">search</span>
+              
+              <button @click="createInventoryModal" class="create-button">
+                <span class="material-icons">add</span>
+                <span class="create-product">Create Inventory</span>
               </button>
           </div>
       </header>
@@ -86,7 +73,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="inventory in sortedProducts" :key="inventory.product_id" @dblclick="viewInventoryModal(inventory)" class="clickable-row">
+            <tr v-for="inventory in sortedProducts" :key="inventory.inventory_id" @dblclick="viewInventoryModal(inventory)" class="clickable-row">
               <td>{{ inventory.product_name }}</td>
               <td>{{ inventory.product_brand }}</td>
               <td>{{ inventory.category_label }}</td>
@@ -109,7 +96,7 @@
       </div>
     </main>
   </div>
-  <Modal :show="isModalOpen" :mode="modalMode" :inventory="selectedInventory" @create="createInventory" @update="updateInventory" @close="closeModal" />
+  <Modal :show="isModalOpen" :mode="modalMode" :inventory="selectedInventory" @create="createInventory" @edit="updateInventory" @close="closeModal" />
   <v-snackbar
       v-model="isSnackBarOpen"
       timeout=3000
@@ -163,14 +150,10 @@ export default {
     async fetchInventories() {
       try {
         const queryParams = {};
-
-        console.log(this.selectedCategory)
-
-        if (this.selectedCategory) {
-          // If a specific column is selected, use it for search
-          queryParams['category_label'] = this.selectedCategory;
+        if (this.search) {
+          queryParams['all_search'] = this.search;
         }
-            
+
         const response = await InventoryService.findMany(queryParams);
 
         this.inventories = response.data;
@@ -179,7 +162,6 @@ export default {
       }
     },
     updateInventoryModal(inventory) {
-      console.log(inventory);
       this.selectedInventory = inventory;
       this.modalMode = 'edit';
       this.isModalOpen = true;
@@ -187,7 +169,6 @@ export default {
 
     viewInventoryModal(inventory) {
       this.selectedInventory = inventory;
-      console.log(Object.keys(this.selectedInventory))
       this.modalMode = 'view';
       this.isModalOpen = true;
     },
@@ -205,11 +186,18 @@ export default {
 
     async updateInventory(inventory) {
       try {
-        await InventoryService.updateProduct(inventory);
-        this.showSnackBar('Product successfully updated!');
+        console.log(inventory);
+        const response = await InventoryService.updateInventory(inventory);
+        console.log(response);
+        this.showSnackBar('Inventory successfully updated!');
       } catch(err) {
-        console.error(err);
-        this.showSnackBar('Product update failed! Something went wrong');
+        const { status, data } = err.response;
+        console.log(status, data.error);
+        if (status == '409'){
+          this.showSnackBar(data.error);
+        } else {
+          this.showSnackBar('Inventory creation failed! Something went wrong');
+        }
       }
       await this.fetchInventories();
       this.closeModal()
@@ -217,27 +205,22 @@ export default {
 
     async createInventory(inventory) {
       try{
-        await InventoryService.createProduct(inventory);
-        this.showSnackBar("Product successfully created!");
+        const response = await InventoryService.createInventory(inventory);
+        console.log(response);
+        this.showSnackBar("Inventory successfully added!");
       } catch(err) {
-        console.error(err);
-        this.showSnackBar('Product creation failed! Something went wrong');
+        const { status, data } = err.response;
+        console.log(status, data.error);
+        if (status == '409'){
+          this.showSnackBar(data.error);
+        } else {
+          this.showSnackBar('Inventory creation failed! Something went wrong');
+        }
       }
       await this.fetchInventories();
       this.closeModal()
     },
     
-    async deleteInventory() {
-      try {
-        await InventoryService.deleteProduct(this.inventoryToDelete.product_id);
-        this.showSnackBar("Product successfully deleted!");
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        this.showSnackBar("Delete failed! Something went wrong.");
-      }
-      await this.fetchInventories();
-      this.isDeleteDialogOpen = false;
-    },
     sortBy(key) {
       if (this.sortKey == key) {
         this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
@@ -246,6 +229,7 @@ export default {
         this.sortOrder = 'asc';
       }
     },
+
     async closeModal() {
       await this.fetchInventories();
       this.isModalOpen = false;
@@ -266,32 +250,15 @@ export default {
   },
   computed: {
     sortedProducts() {
-      return this.inventories.sort((a,b) => {
-        let modifier = 1;
-        if (this.sortOrder === 'desc') modifier = -1;
-        if (a[this.sortKey] < b[this.sortKey]) return -1 * modifier;
-        if (a[this.sortKey] > b[this.sortKey]) return 1 * modifier;
-      });
-    },
-    uniqueCategories() {
-      try {
-        // Fetch categories from the server
-        const queryParams = {};
-        if (this.categories) {
-          // Return unique categories
-
-          return [...new Set(this.categories.map(category => category.category_label))]
-        } else {
-          console.error('Error fetching categories:', response);
-          // If fetching fails, fallback to computing unique categories from products
-          return [...new Set(this.inventories.map(product => product.category_label))];
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-        // If an error occurs, fallback to computing unique categories from products
-        return [...new Set(this.inventories.map(product => product.category_label))];
+      const inventoriesCopy = [...this.inventories]; // Create a shallow copy of the inventories array
+        return inventoriesCopy.sort((a, b) => {
+          let modifier = 1;
+          if (this.sortOrder === 'desc') modifier = -1;
+          if (a[this.sortKey] < b[this.sortKey]) return -1 * modifier;
+          if (a[this.sortKey] > b[this.sortKey]) return 1 * modifier;
+          return 0; // Ensure it returns 0 if a[this.sortKey] === b[this.sortKey]
+        });
       }
-    },
   }
 };
 </script>

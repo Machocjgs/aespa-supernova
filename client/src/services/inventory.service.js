@@ -14,29 +14,26 @@ class ProductService {
     return axios(payload);
   }
 
-  updateProduct(formData) {
-    return axios.patch(`${API_URL}/${formData.get('inventory_id')}`, formData, {
+  updateInventory(body) {
+    return axios.patch(`${API_URL}/${body.inventory_id}`, body, {
       headers: {
         'token':localStorage.getItem('token'),
-        'Content-Type': 'multipart/form-data'
       }
     })
   }
 
-  createProduct(formData) {
-    return axios.post(API_URL, formData, {
+  createInventory(body) {
+    return axios.post(API_URL, body, {
       headers:{
         'token':localStorage.getItem('token'),
-        'Content-Type': 'multipart/form-data'
       }
     })
   }
   
-  deleteProduct(inventoryId) {
+  deleteInventory(inventoryId) {
     return axios.delete(`${API_URL}/${inventoryId}`, {
       headers: {
         'token':localStorage.getItem('token'),
-        'Content-Type': 'multipart/form-data'
       }
     })
   }

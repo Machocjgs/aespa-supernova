@@ -86,7 +86,6 @@ const findMany = async (req, res) => {
         size_description,
         all_search
     } = req.query;
-
     const condition = {};
 
     if (all_search) {
@@ -99,7 +98,7 @@ const findMany = async (req, res) => {
         if (size_label) condition.size_label = { [db.Sequelize.Op.like]: `%${size_label}%` };
         if (size_description) condition.size_description = { [db.Sequelize.Op.like]: `%${size_description}%` };
     }
-    
+
     try {
         const result = await db.Size.findAll({where:condition})
         return res.send(result);

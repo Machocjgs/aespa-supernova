@@ -18,8 +18,9 @@ const login = (req,res) => {
             res.status(404).send({error: "Invalid User name or Password"});
         } else {
             // Removing the password here
-            const {password:_, ...jwt_token} = user;
-            const token = jwt.sign(jwt_token, config.jwttoken, {expiresIn: '3h'});
+            const {password:_, ...jwt_token} = user; 
+
+            const token = jwt.sign(jwt_token, config.jwttoken, {expiresIn: '7d'});
             
             const user_copy = user.toJSON();
             delete user_copy.password;

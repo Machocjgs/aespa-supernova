@@ -63,7 +63,7 @@
                   {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
                 </span>
               </th>
-              <th>Action</th>
+              <!-- <th>Action</th> -->
             </tr>
           </thead>
           <tbody>
@@ -72,13 +72,13 @@
               <td>{{ category.subcategory_label }}</td>
               <td>{{ category.created_dt }}</td>
               <td>{{ category.last_modified_dt }}</td>
-              <td>
+              <!-- <td>
                 <div class="row-actions">
                   <button @click="confirmDeleteCategory(category)" class="icon-button">
                     <span class="material-icons">delete</span>
                   </button>
                 </div>
-              </td>
+              </td> -->
             </tr>
           </tbody>
         </table>
@@ -135,7 +135,7 @@
                   {{ sortOrder === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down' }}
                 </span>
               </th>
-              <th>Action</th>
+              <!-- <th>Action</th> -->
             </tr>
           </thead>
           <tbody>
@@ -144,13 +144,13 @@
               <td>{{ size.size_description }}</td>
               <td>{{ size.created_dt }}</td>
               <td>{{ size.last_modified_dt }}</td>
-              <td>
+              <!-- <td>
                 <div class="row-actions">
                   <button @click="confirmDeleteSize(size)" class="icon-button">
                     <span class="material-icons">delete</span>
                   </button>
                 </div>
-              </td>
+              </td> -->
             </tr>
           </tbody>
         </table>

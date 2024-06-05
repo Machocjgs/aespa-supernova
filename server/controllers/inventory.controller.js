@@ -9,14 +9,17 @@ const insertOne = async(req,res) => {
         status,
     } = req.body
 
-    if (!product_id || !size_id || !quantity || !status){
-        return res.send(400).error({error: "All fields required!"});
-    }
-
     try {
+        if (!product_id || !size_id || !quantity || !status){
+            return res.status(400).send({error: "All fields required!"});
+        }
         const response = await db.Inventory.create({product_id, size_id, quantity, status});
         return res.send(response);
     } catch (error) {
+        if(error instanceof db.Sequelize.ValidationError){
+            return res.status(409).send({error: "Selected Product and Size already exists!"});
+        }
+        console.error(error);
         return res.status(500).send({error: error.message});
     }
 }
@@ -27,12 +30,15 @@ const findMany = async(req,res) => {
         product_brand,
         size_label,
         status,
+        category_label,
+        subcategory_label,
         all_search
-    } = req.body;
+    } = req.query;
 
     const productCondition = {};
     const sizeCondition = {};
     const statusCondition = {};
+    const categoryCondition = {};
 
     if (all_search) {
         productCondition[db.Sequelize.Op.or] = [
@@ -45,6 +51,10 @@ const findMany = async(req,res) => {
         statusCondition[db.Sequelize.Op.or] = [
             {status: { [db.Sequelize.Op.like]: `%${all_search}%` } },
         ]
+        categoryCondition[db.Sequelize.Op.or] = [
+            {category_label: { [db.Sequelize.Op.like]: `%${all_search}%` } },
+            {subcategory_label: { [db.Sequelize.Op.like]: `%${all_search}%` } },
+        ]
         
     } else {
         if(product_name) productCondition.product_name = product_name;
@@ -52,14 +62,18 @@ const findMany = async(req,res) => {
 
         if(size_label) sizeCondition.size_label = size_label;
         if(status) statusCondition = status;
+
+        if(category_label) categoryCondition.category_label = category_label;
+        if(subcategory_label) categoryCondition.subcategory_label = subcategory_label;
     }
 
     try {
         const result = await db.Inventory.findAll({
             where: statusCondition,
             include: [
-                {model: db.Size, as: 'size', attributes:[], where:sizeCondition},
-                {model: db.Product, as: 'product', attributes:[], where:productCondition, include: [{model: db.Category, as: 'category', attributes:[]}]},
+                {model: db.Size, as: 'size', attributes:[], where: sizeCondition},
+                {model: db.Product, as: 'product', attributes:[], where: productCondition, 
+                    include: [{model: db.Category, as: 'category', attributes:[], where: categoryCondition}]},
             ],
             attributes: {
                 include: [
@@ -73,7 +87,7 @@ const findMany = async(req,res) => {
         })
         return res.send(result);
     } catch (error) {
-        return res.status(500).send({error: error.message});        
+        return res.status(500).send({error: error.message});
     }
 };
 
@@ -81,11 +95,12 @@ const updateOne = async(req,res) => {
     const inventory_id = req.params.id;
     const {status, quantity} = req.body;
 
-    if (!inventory_id || isNaN(inventory_id) || parseInt(inventory_id) <= 0){
-        res.status(400).send({message: "Invalid ID Parameter"});
-    }
-
     try {
+
+        if (!inventory_id || isNaN(inventory_id) || parseInt(inventory_id) <= 0){
+            return res.status(400).send({message: "Invalid ID Parameter"});
+        }
+
         const inventory = await db.Inventory.findOne({where:{inventory_id}});
 
         if (!inventory) {
@@ -102,6 +117,9 @@ const updateOne = async(req,res) => {
 
         return res.send(save_resp);
     } catch (error) {
+        if(error instanceof db.Sequelize.ValidationError){
+            return res.status(409).send({error: "Selected Product and Size already exists!"});
+        }
         return res.status(500).send({message: error.message});
     }
 };
